@@ -1,0 +1,52 @@
+name: 代码格式化
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: astral-sh/setup-uv
+        uses: astral-sh/setup-uv@v7.1.6
+        with:
+          github-token: ${{ github.token }}
+          enable-cache: "auto"
+
+      - name: 安装依赖
+        run: uv sync --only-dev
+
+      - name: 运行代码格式化
+        run: uv run ruff format .
+
+      - name: 检查是否有代码更改
+        id: check_changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 创建格式化 PR
+        if: steps.check_changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "style: automated code formatting"
+          title: "style: Automated code formatting"
+          body: "Automated code formatting changes created by GitHub Actions."
+          branch: style/automated-formatting
+          delete-branch: true
+          add-paths: "."
