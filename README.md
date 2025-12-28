@@ -1,0 +1,213 @@
+<div align="center">
+  <h1>✨Re-灵初bot✨</h1>
+  
+  <a name="readme-top"><img src="https://socialify.git.ci/lingchu-bot/lingchu-bot/image?custom_description=%E7%94%B1Nonebot2%E9%A9%B1%E5%8A%A8%E7%9A%84QQ%E7%AE%A1%E7%90%86%E6%9C%BA%E5%99%A8%E4%BA%BA&description=1&font=Inter&forks=1&issues=1&language=1&name=1&owner=1&pattern=Overlapping+Hexagons&pulls=1&theme=Auto" alt="lingchu-bot" width="640" height="320" /></a>
+  
+[![][license-shield]][license-link] [![][docs-shield]][docs-link] [![][github-release-shield]][github-release-link] [![][github-stars-shield]][github-stars-link]
+![CodeRabbit Pull Request Reviews][CodeRabbit-link]
+
+![ide-link-1] ![ide-link-2] ![managed]
+
+</div>
+
+> [!WARNING]
+> 🚧Pre-alpha阶段，项目暂不可用🚧
+> 最新进展请关注[dev分支](https://github.com/lingchu-bot/lingchu-bot/tree/dev)
+
+<div>
+
+## 简介
+
+灵初bot是一款基于NoneBot2框架开发的QQ管理机器人，旨在为用户提供强大且易用的群管理和互动功能。通过集成多种插件和工具，灵初bot能够帮助群管理员更高效地管理群组，同时为群成员带来丰富的娱乐体验。
+
+#### 功能与生态
+
+<div>
+    <h3>核心系统</h3>
+    <ul>
+        <li>数据库支持: 内置 SQLite 数据库支持,连接池管理,支持多数据库并发访问</li>
+        <li>可视化管理: 提供基于Web的可视化管理界面,方便用户配置和监控机器人</li>
+        <li>自定义协议: 拓展OneBot11协议,支持自定义事件处理</li>
+    </ul>
+    <h3>插件系统</h3>
+    <ul>
+        <li>
+            内置插件
+            <ul>
+                <li>
+                    群管理
+                    <ul>
+                        <li>发言管理</li>
+                        <li>成员管理</li>
+                        <li>群聊管理</li>
+                        <li>定时任务</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li>
+            拓展插件
+            <ul>
+                <li>完全支持 NoneBot2 插件生态,可以无缝安装使用</li>
+                <li>提供丰富的插件接口,方便开发者自定义功能</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+
+</div>
+<div>
+
+# 如何开始
+
+安装 Python
+
+```bash
+https://www.python.org/downloads/latest/python3.13/
+```
+
+安装 uv
+
+```bash
+powershell -ExecutionPolicy ByPass -c "irm https://pdm-project.org/install.ps1 | iex"
+```
+
+安装nb-cli
+
+```bash
+uvx nb-cli #等价uv tool run nb-cli,临时使用
+```
+```bash
+uv tool install nb-cli #持久安装(推荐)
+```
+
+</div>
+<div>
+
+## 开始使用
+
+[项目文档](https://lingchu.zone.id/)
+
+## 快速开始
+
+##### 以下操作需在终端执行，且目录无中文字符(带有中文字符可能出现意料之外的错误)
+
+克隆项目到本地
+
+```bash
+git clone https://github.com/xinvxueyuan/lingchu-bot.git
+```
+
+进入项目目录
+
+```bash
+cd lingchu-bot
+```
+
+安装项目依赖
+
+```bash
+uv sync --no-dev  # 仅安装生产依赖
+```
+```bash
+uv sync  # 安装全部依赖(包含开发和可选依赖)
+```
+
+启动项目
+
+```bash
+nb run  # 启动项目(生产环境)
+```
+
+```bash
+nb run -reload  # 自动重载(开发环境)
+```
+
+```bash
+uv run zensical serve # 启动文档服务器(开发环境)
+```
+
+</div>
+<div>
+
+## 项目配置
+
+```env
+ENVIRONMENT=prod                                     #环境，dev为开发环境，prod为生产环境
+HOST=127.0.0.1                                       #主机地址，默认127.0.0.1，公网部署时需修改该值为0.0.0.0
+PORT=8080                                            #主机端口，默认8080
+ONEBOT_ACCESS_TOKEN=abcd                             #onebot 访问令牌
+SUPERUSERS=["12345789","987654321"]                  #超级用户列表，多个用户用逗号分隔
+DEFAULT_COMMAND_START=""                             #默认命令前缀，多个前缀用逗号分隔，留空表示无前缀
+```
+
+</div>
+<div>
+
+## 兼容问题
+
+- NoneBot2的WebSockets驱动器与本项目的NiceGui依赖不兼容，会导致NoneBot2的OneBot适配器无法正常运行。(NiceGui用于Web前端实现)
+
+
+## 许可证
+
+``` md
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+本项目使用复合许可证，包含 LGPL-3.0 和 GNU FDL。
+详细说明请参见[Repository Policy](Repository-Policy.md)。
+许可证文本参见[LICENSE-code](LICENSE-code)和[LICENSE-docs](./LICENSE-docs)。
+
+## 感谢
+
+##### 感谢下列项目提供的底层支撑,没有这些项目,本项目就无法实现:
+
+[NoneBot2](https://nonebot.dev/)
+
+[OneBot11](https://11.onebot.dev/)
+
+[nonebot-adapter-onebot](https://github.com/nonebot/adapter-onebot)
+
+[nonebot-plugin-apscheduler](https://github.com/nonebot/plugin-apscheduler)
+
+[nonebot-plugin-localstore](https://github.com/nonebot/plugin-localstore)
+
+[nonebot-plugin-orm](https://github.com/nonebot/plugin-orm)
+
+[NiceGUI](https://nicegui.io/)
+
+### 本项目依赖下列依赖:
+
+[依赖列表](https://github.com/lingchu-bot/lingchu-bot/network/dependencies)
+
+</div>
+
+<div>
+<!-- official link -->
+
+[docs-link]: https://lingchu.zone.id/
+
+<!-- Other link-->
+[license-link]: https://www.gnu.org/licenses/lgpl-3.0.html
+[github-release-link]: https://github.com/lingchu-bot/lingchu-bot/releases/latest
+[github-stars-link]: https://github.com/lingchu-bot/lingchu-bot
+[managed]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json
+
+<!-- Shield link-->
+[docs-shield]: https://img.shields.io/badge/documentation-148F76
+[github-release-shield]: https://img.shields.io/github/v/release/xinvxueyuan/lingchu-bot
+[github-stars-shield]: https://img.shields.io/github/stars/xinvxueyuan/lingchu-bot?color=%231890FF&style=flat-square
+[license-shield]: https://img.shields.io/github/license/xinvxueyuan/lingchu-bot
+[CodeRabbit-link]: https://img.shields.io/coderabbit/prs/github/xinvxueyuan/lingchu-bot?utm_source=oss&utm_medium=github&utm_campaign=xinvxueyuan%2Flingchu-bot&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews
+[ide-link-1]: https://img.shields.io/badge/IDE-Visual%20Studio%20Code-blue?style=flat&logo=data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB0PSIxNzI4MTA5NDQzMzg2IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjU5OTAiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiPjxwYXRoIGQ9Ik03MjUuMzMzMzMzIDcwMi43MlYzMTUuMzA2NjY3bC0yNTYgMTkzLjcwNjY2Nk05NC43MiAzOTIuMTA2NjY3YTM2LjYwOCAzNi42MDggMCAwIDEtMC44NTMzMzMtNDkuMDY2NjY3bDUxLjItNDcuMzZjOC41MzMzMzMtNy42OCAyOS40NC0xMS4wOTMzMzMgNDQuOCAwbDE0NS45MiAxMTEuMzYgMzM4LjM0NjY2Ni0zMDkuMzMzMzMzYzEzLjY1MzMzMy0xMy42NTMzMzMgMzcuMTItMTkuMiA2NC01LjEybDE3MC42NjY2NjcgODEuNDkzMzMzYzE1LjM2IDguOTYgMjkuODY2NjY3IDIzLjA0IDI5Ljg2NjY2NyA0OS4wNjY2Njd2NTc2YzAgMTcuMDY2NjY3LTEyLjM3MzMzMyAzNS40MTMzMzMtMjUuNiA0Mi42NjY2NjZsLTE4Ny43MzMzMzQgODkuNmMtMTMuNjUzMzMzIDUuNTQ2NjY3LTM5LjI1MzMzMyAwLjQyNjY2Ny00OC4yMTMzMzMtOC41MzMzMzNsLTM0Mi4xODY2NjctMzExLjQ2NjY2Ny0xNDUuMDY2NjY2IDExMC45MzMzMzRjLTE2LjIxMzMzMyAxMS4wOTMzMzMtMzYuMjY2NjY3IDguMTA2NjY3LTQ0LjggMGwtNTEuMi00Ni45MzMzMzRjLTEzLjY1MzMzMy0xNC4wOC0xMS45NDY2NjctMzcuMTIgMi4xMzMzMzMtNTEuMmwxMjgtMTE1LjIiIGZpbGw9IiNmZmZmZmYiIHAtaWQ9IjU5OTEiPjwvcGF0aD48L3N2Zz4=
+[ide-link-2]: https://img.shields.io/badge/IDE-PyCharm-green?style=flat&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjEgMTVjMCAxLjY1Ny0xLjM0MyAzLTMgM3MtMy0xLjM0My0zLTNzMS4zNDMtMyAzLTNzMyAxLjM0MyAzIDN6TTMgMTVjMCAxLjY1NyAxLjM0MyAzIDMgM3MzLTEuMzQzIDMtM3MtMS4zNDMtMy0zLTNzLTMgMS4zNDMtMyAzem0xMy42LTguOGwtLjQgMi40LTYuNC02LjQgMi40LS40IDQuOCA0LjggNC44LTQuOHoiPjwvcGF0aD48L3N2Zz4=
+
+</div>

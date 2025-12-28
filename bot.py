@@ -1,0 +1,16 @@
+import nonebot
+from nonebot.adapters.onebot.v11 import Adapter as ONEBOT_V11Adapter
+
+init_config = {"LOCALSTORE_USE_CWD": "True", "DRIVER": "~fastapi+~aiohttp"}
+nonebot.init(**init_config)
+
+
+driver = nonebot.get_driver()
+driver.register_adapter(ONEBOT_V11Adapter)
+
+
+nonebot.load_from_toml("pyproject.toml")
+nonebot.load_plugins("src/builtin_plugins")
+
+if __name__ == "__main__":
+    nonebot.run()

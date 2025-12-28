@@ -1,0 +1,68 @@
+name: Auto release on PR merge
+
+on:
+    pull_request:
+        types: [closed]
+        branches: [main]
+
+permissions:
+    contents: write
+    pull-requests: read
+    id-token: write
+
+jobs:
+    bump-version:
+        name: Bump version when hotfix/* or dev merged
+        if: ${{ github.event.pull_request.merged == true && (startsWith(github.event.pull_request.head.ref, 'hotfix/') || github.event.pull_request.head.ref == 'dev') }}
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Determine bump type from PR labels
+              id: bump_type
+              shell: bash
+              run: |
+                  labels=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" 2>/dev/null || true)
+                  echo "Labels: $labels"
+                  bump=patch
+                  if echo "$labels" | grep -qE '(^|[[:space:]])major([[:space:]]|$)'; then
+                    bump=major
+                  elif echo "$labels" | grep -qE '(^|[[:space:]])minor([[:space:]]|$)'; then
+                    bump=minor
+                  fi
+                  echo "bump=$bump" >> "$GITHUB_OUTPUT"
+
+            - name: Bump version (bump-my-version)
+              id: bump
+              uses: callowayproject/bump-my-version@master
+              env:
+                  BUMPVERSION_TAG: "true"
+                  BUMPVERSION_COMMIT: "true"
+              with:
+                  args: ${{ steps.bump_type.outputs.bump }}
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Print result
+              run: |
+                  if [ "${{ steps.bump.outputs.bumped }}" = "true" ]; then
+                    echo "✅ 版本已更新： ${{ steps.bump.outputs.previous-version }} → ${{ steps.bump.outputs.current-version }}"
+                    echo "🔖 标签：v${{ steps.bump.outputs.current-version }}"
+                  else
+                    echo "ℹ️  未检测到版本变更（可能是同一版本或配置问题）"
+                  fi
+
+            - name: Comment on PR with tag info
+              if: ${{ steps.bump.outputs.bumped == 'true' }}
+              uses: actions/github-script@v6
+              env:
+                  PREV: ${{ steps.bump.outputs.previous-version }}
+                  CUR: ${{ steps.bump.outputs.current-version }}
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const pr = context.payload.pull_request;
+                      const body = `🔖 已创建标签 \`v${process.env.CUR}\`，从 \`${process.env.PREV}\` 升级为 \`${process.env.CUR}\`.`;
+                      await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: pr.number, body });
