@@ -20,6 +20,7 @@ dependencies = [
     "nonebot-plugin-apscheduler>=0.5.0",
     "nonebot-plugin-localstore>=0.7.4",
     "nonebot-plugin-orm[aiosqlite]>=0.8.2",
+    "psutil>=7.2.1",
 ]
 
 [project.optional-dependencies]
@@ -44,8 +45,6 @@ Homepage = "https://lingchu.zone.id/"
 Documentation = "https://lingchu.zone.id/"
 Repository = "https://github.com/xinvxueyuan/nonebot-plugin-lingchu-bot.git"
 Issues = "https://github.com/xinvxueyuan/nonebot-plugin-lingchu-bot/issues"
-
-# [project.scripts]
 
 [tool.PEP639.Standards]
 license-expression = "AGPL-3.0 AND CC-BY-SA-4.0"
