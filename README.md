@@ -117,15 +117,19 @@ uv sync  # 安装全部依赖(包含开发和可选依赖)
 启动项目
 
 ```bash
+uv run run.py # 启动项目(生产环境)
+```
+
+```bash
 nb run  # 启动项目(生产环境)
 ```
 
 ```bash
-nb run -reload  # 自动重载(开发环境)
+nb run -reload  # 自动重载(开发环境)，参数可缩写为`-r`
 ```
 
 ```bash
-uv run zensical serve # 启动文档服务器(开发环境)
+uv run zensical serve # 启动文档开发服务器(开发环境)
 ```
 
 </div>
@@ -147,7 +151,7 @@ DEFAULT_COMMAND_START=""                             #默认命令前缀，多�
 
 ## 兼容问题
 
-- NoneBot2的WebSockets驱动器与本项目的NiceGui依赖不兼容，会导致NoneBot2的OneBot适配器无法正常运行。(NiceGui用于Web前端实现)
+- 暂无
 
 
 ## 许可证

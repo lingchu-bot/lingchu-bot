@@ -2,7 +2,6 @@ from nonebot import logger
 
 from .api import apimount as apimount
 from .database.model import models as models
-from .web import webmount as webmount
 
 
 def check_init_status() -> bool:
