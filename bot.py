@@ -1,7 +1,7 @@
 import nonebot
 from nonebot.adapters.onebot.v11 import Adapter as ONEBOT_V11Adapter
 
-init_config = {"LOCALSTORE_USE_CWD": "True", "DRIVER": "~fastapi+~aiohttp"}
+init_config = {"LOCALSTORE_USE_CWD": "True", "DRIVER": "~fastapi+~httpx+~websockets"}
 nonebot.init(**init_config)
 
 

@@ -19,8 +19,6 @@ if TYPE_CHECKING:
 
 from ..database import client
 from ..database.model.models import (
-    BotConfig,
-    BotInfo,
     ChatConfig,
     ChatList,
     GlobalAdminUser,
@@ -29,6 +27,8 @@ from ..database.model.models import (
     GlobalGroupConfig,
     GroupConfig,
     GroupList,
+    LoginInfo,
+    UiConfig,
 )
 
 app = nonebot.get_asgi()
@@ -184,8 +184,8 @@ COMMON_ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
 
 
 MODEL_REGISTRY: dict[str, type[Model]] = {
-    "BotInfo": BotInfo,
-    "BotConfig": BotConfig,
+    "LoginInfo": LoginInfo,
+    "UiConfig": UiConfig,
     "GlobalAdminUser": GlobalAdminUser,
     "GlobalConfig": GlobalConfig,
     "GlobalGroupConfig": GlobalGroupConfig,
@@ -366,7 +366,7 @@ async def list_models() -> ModelsResponse:
 async def health_check() -> HealthResponse:
     """数据库连接健康检查（轻量）。"""
     try:
-        await client.count(BotConfig, filters=None)
+        await client.count(UiConfig, filters=None)
     except SQLAlchemyError as e:
         raise HTTPException(
             status_code=500,

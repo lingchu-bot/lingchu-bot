@@ -1,68 +1,246 @@
 name: Auto release on PR merge
 
 on:
-    pull_request:
-        types: [closed]
-        branches: [main]
+  pull_request:
+    types: [closed, labeled, unlabeled, synchronize]
+    branches: [main]
+  push:
+    tags:
+      - "v**"
 
 permissions:
-    contents: write
-    pull-requests: read
-    id-token: write
+  contents: write
+  pull-requests: read
+  id-token: write
 
 jobs:
-    bump-version:
-        name: Bump version when hotfix/* or dev merged
-        if: ${{ github.event.pull_request.merged == true && (startsWith(github.event.pull_request.head.ref, 'hotfix/') || github.event.pull_request.head.ref == 'dev') }}
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
+  bump-version:
+    name: Bump version when hotfix/* or dev merged
+    if: ${{ github.event.pull_request.merged == true && (startsWith(github.event.pull_request.head.ref, 'hotfix/') || github.event.pull_request.head.ref == 'dev') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-            - name: Determine bump type from PR labels
-              id: bump_type
-              shell: bash
-              run: |
-                  labels=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" 2>/dev/null || true)
-                  echo "Labels: $labels"
-                  bump=patch
-                  if echo "$labels" | grep -qE '(^|[[:space:]])major([[:space:]]|$)'; then
-                    bump=major
-                  elif echo "$labels" | grep -qE '(^|[[:space:]])minor([[:space:]]|$)'; then
-                    bump=minor
-                  fi
-                  echo "bump=$bump" >> "$GITHUB_OUTPUT"
+      - name: Determine bump type from PR labels
+        id: bump_type
+        shell: bash
+        run: |
+          labels=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" 2>/dev/null || true)
+          echo "Labels: $labels"
+          bump=patch
+          if echo "$labels" | grep -qE '(^|[[:space:]])major([[:space:]]|$)'; then
+            bump=major
+          elif echo "$labels" | grep -qE '(^|[[:space:]])minor([[:space:]]|$)'; then
+            bump=minor
+          fi
+          echo "bump=$bump" >> "$GITHUB_OUTPUT"
 
-            - name: Bump version (bump-my-version)
-              id: bump
-              uses: callowayproject/bump-my-version@master
-              env:
-                  BUMPVERSION_TAG: "true"
-                  BUMPVERSION_COMMIT: "true"
-              with:
-                  args: ${{ steps.bump_type.outputs.bump }}
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check if tag exists and get current version
+        id: check_tag
+        shell: bash
+        run: |
+          if [ -f "pyproject.toml" ]; then
+            current_version=$(grep -E '^version =' pyproject.toml | cut -d'"' -f2)
+          elif [ -f "setup.py" ]; then
+            current_version=$(grep -E 'version=' setup.py | cut -d"'" -f2)
+          else
+            current_version="0.0.0"
+          fi
 
-            - name: Print result
-              run: |
-                  if [ "${{ steps.bump.outputs.bumped }}" = "true" ]; then
-                    echo "✅ 版本已更新： ${{ steps.bump.outputs.previous-version }} → ${{ steps.bump.outputs.current-version }}"
-                    echo "🔖 标签：v${{ steps.bump.outputs.current-version }}"
-                  else
-                    echo "ℹ️  未检测到版本变更（可能是同一版本或配置问题）"
-                  fi
+          echo "current_version=$current_version" >> "$GITHUB_OUTPUT"
 
-            - name: Comment on PR with tag info
-              if: ${{ steps.bump.outputs.bumped == 'true' }}
-              uses: actions/github-script@v6
-              env:
-                  PREV: ${{ steps.bump.outputs.previous-version }}
-                  CUR: ${{ steps.bump.outputs.current-version }}
-              with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-                  script: |
-                      const pr = context.payload.pull_request;
-                      const body = `🔖 已创建标签 \`v${process.env.CUR}\`，从 \`${process.env.PREV}\` 升级为 \`${process.env.CUR}\`.`;
-                      await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: pr.number, body });
+          tag_name="v$current_version"
+          if git rev-parse "refs/tags/$tag_name" >/dev/null 2>&1; then
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+            echo "existing_tag=$tag_name" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Delete existing tag if needed
+        if: ${{ steps.check_tag.outputs.tag_exists == 'true' && github.event.pull_request.merged == true }}
+        shell: bash
+        run: |
+          tag_name="${{ steps.check_tag.outputs.existing_tag }}"
+          echo "删除已存在的标签: $tag_name"
+          git tag -d "$tag_name"
+          git push origin ":refs/tags/$tag_name"
+
+      - name: Bump version (bump-my-version)
+        id: bump
+        uses: callowayproject/bump-my-version@master
+        env:
+          BUMPVERSION_TAG: "true"
+          BUMPVERSION_COMMIT: "true"
+        with:
+          args: ${{ steps.bump_type.outputs.bump }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Print result
+        run: |
+          if [ "${{ steps.bump.outputs.bumped }}" = "true" ]; then
+            echo "✅ 版本已更新： ${{ steps.bump.outputs.previous-version }} → ${{ steps.bump.outputs.current-version }}"
+            echo "🔖🔖🔖🔖 标签：v${{ steps.bump.outputs.current-version }}"
+          else
+            echo "ℹℹℹℹ️  未检测到版本变更（可能是同一版本或配置问题）"
+          fi
+
+      - name: Comment on PR with tag info
+        if: ${{ steps.bump.outputs.bumped == 'true' }}
+        uses: actions/github-script@v6
+        env:
+          PREV: ${{ steps.bump.outputs.previous-version }}
+          CUR: ${{ steps.bump.outputs.current-version }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const body = `🔖🔖🔖🔖 已创建标签 \`v${process.env.CUR}\`，从 \`${process.env.PREV}\` 升级为 \`${process.env.CUR}\`.`;
+            await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: pr.number, body });
+
+  update-existing-release:
+    name: Update existing release on label changes
+    if: ${{ github.event.action == 'labeled' || github.event.action == 'unlabeled' || github.event.action == 'synchronize' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get current version and check release
+        id: check_release
+        shell: bash
+        run: |
+          if [ -f "pyproject.toml" ]; then
+            current_version=$(grep -E '^version =' pyproject.toml | cut -d'"' -f2)
+          elif [ -f "setup.py" ]; then
+            current_version=$(grep -E 'version=' setup.py | cut -d"'" -f2)
+          else
+            current_version="0.0.0"
+          fi
+
+          echo "current_version=$current_version" >> "$GITHUB_OUTPUT"
+          tag_name="v$current_version"
+          echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
+
+      - name: Check if release exists
+        id: check_existing_release
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const tagName = '${{ steps.check_release.outputs.tag_name }}';
+            try {
+              const release = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: tagName
+              });
+              console.log(`找到已存在的发行版: ${release.data.name}`);
+              return release.data.id;
+            } catch (error) {
+              console.log(`未找到标签 ${tagName} 对应的发行版`);
+              return null;
+            }
+
+      - name: Update existing release
+        if: ${{ steps.check_existing_release.outputs.release_id != null }}
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const releaseId = '${{ steps.check_existing_release.outputs.release_id }}';
+            const tagName = '${{ steps.check_release.outputs.tag_name }}';
+            const prNumber = context.payload.pull_request?.number;
+
+            const labels = context.payload.pull_request?.labels || [];
+            const labelNames = labels.map(label => label.name);
+
+            let body = `## 更新信息\n`;
+            body += `- **PR**: #${prNumber}\n`;
+            body += `- **触发事件**: ${context.payload.action}\n`;
+            body += `- **相关标签**: ${labelNames.join(', ') || '无'}\n`;
+            body += `- **更新时间**: ${new Date().toISOString()}\n\n`;
+
+            try {
+              const fs = require('fs');
+              if (fs.existsSync('CHANGELOG.md')) {
+                const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+                body += `## 变更日志\n${changelog}`;
+              }
+            } catch (error) {
+              console.log('无法读取 CHANGELOG.md 文件');
+            }
+
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: releaseId,
+              tag_name: tagName,
+              body: body,
+              draft: false,
+              prerelease: false
+            });
+
+            console.log(`✅ 已更新发行版 ${tagName}`);
+
+  build:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [bump-version, update-existing-release]
+    if: always()
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 安装 uv 并依赖
+        uses: astral-sh/setup-uv@v7.1.6
+        with:
+          github-token: ${{ github.token }}
+          enable-cache: "auto"
+
+      - name: 构建
+        run: uv build --clear
+
+      - name: Create or Update Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+          files: |
+            dist/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Handle release updates
+        if: steps.create_release.outcome == 'success'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const releaseId = '${{ steps.create_release.outputs.id }}';
+            const tagName = '${{ github.ref_name }}';
+
+            if (releaseId) {
+              console.log(`✅ 发行版 ${tagName} 处理完成`);
+              
+              if (context.payload.action && ['labeled', 'unlabeled', 'synchronize'].includes(context.payload.action)) {
+                await github.rest.repos.updateRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: releaseId,
+                  name: `${tagName} (已更新)`
+                });
+              }
+            }
