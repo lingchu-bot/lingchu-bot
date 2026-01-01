@@ -11,7 +11,6 @@ def check_init_status() -> bool:
 
 def index_init() -> None:
     """机器人核心部分初始化索引"""
-
     if check_init_status():
         logger.info("未发现配置或配置损坏，使用默认配置")
     else:
