@@ -15,10 +15,8 @@ class LoginInfo(Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     login_id: Mapped[int] = mapped_column(unique=True, index=True)
     login_name: Mapped[str] = mapped_column(index=True)
-    core_version: Mapped[str] = mapped_column(index=True)
-    login_status: Mapped[int] = mapped_column(default=0, index=True)
-    sub_plugins: Mapped[list[str]] = mapped_column(JSON, default=list)
-    core_plugins: Mapped[list[str]] = mapped_column(JSON, default=list)
+    login_status: Mapped[bool] = mapped_column(default=0, index=True)
+    loaded_plugins: Mapped[list[str]] = mapped_column(JSON, default=list)
 
 
 class UiConfig(Model):

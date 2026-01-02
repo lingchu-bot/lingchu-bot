@@ -1,17 +1,13 @@
-from nonebot import logger
-
-from .api import apimount as apimount
-from .database.model import models as models
+from .api.apimount import *  # noqa: F403
 
 
 def check_init_status() -> bool:
     """机器人初次启动检查和配置"""
+    from .module.initial import sync as sync
+
     return True
 
 
 def index_init() -> None:
     """机器人核心部分初始化索引"""
-    if check_init_status():
-        logger.info("未发现配置或配置损坏，使用默认配置")
-    else:
-        logger.info("使用用户配置启动灵初")
+    check_init_status()
