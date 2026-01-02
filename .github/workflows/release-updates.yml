@@ -1,12 +1,21 @@
-name: Auto release on PR merge with Release tag
+name: Manual release with version bump
 
 on:
-  pull_request:
-    types: [closed, labeled, unlabeled, synchronize]
-    branches: [main]
-  push:
-    tags:
-      - "v**"
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: "Version bump type"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      tag_name:
+        description: "Custom tag name (optional, will use bumped version if empty)"
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -15,50 +24,30 @@ permissions:
 
 jobs:
   bump-version:
-    name: Bump version when dev merged with Release tag
-    if: ${{ github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'dev' && (contains(github.event.pull_request.labels.*.name, 'Release major') || contains(github.event.pull_request.labels.*.name, 'Release minor') || contains(github.event.pull_request.labels.*.name, 'Release patch')) }}
+    name: Bump version and create release
     runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.set_tag.outputs.tag_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify Release tag exists
-        id: check_release_tag
+      - name: Validate bump type
+        id: validate
         shell: bash
         run: |
-          # 检查PR标签中是否有Release标签
-          labels=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH")
-          has_release_tag=false
-          bump_type="patch"
-          for label in $labels; do
-            if [[ $label == 'Release major' ]]; then
-              has_release_tag=true
-              bump_type="major"
-              break
-            elif [[ $label == 'Release minor' ]]; then
-              has_release_tag=true
-              bump_type="minor"
-              break
-            elif [[ $label == 'Release patch' ]]; then
-              has_release_tag=true
-              break
-            fi
-          done
-
-          if [ "$has_release_tag" = "true" ]; then
-            echo "Found Release tag"
-            echo "has_release_tag=true" >> $GITHUB_OUTPUT
-            echo "bump_type=$bump_type" >> $GITHUB_OUTPUT
-          else
-            echo "No Release tag found in PR labels"
-            echo "has_release_tag=false" >> $GITHUB_OUTPUT
+          bump_type="${{ github.event.inputs.bump_type }}"
+          if [[ ! "$bump_type" =~ ^(patch|minor|major)$ ]]; then
+            echo "❌ 错误的 bump_type: $bump_type. 必须是 patch, minor 或 major"
+            exit 1
           fi
+          echo "bump_type=$bump_type" >> $GITHUB_OUTPUT
 
-      - name: Check if tag exists and get current version
-        if: steps.check_release_tag.outputs.has_release_tag == 'true'
-        id: check_tag
+      - name: Get current version
+        id: get_version
         shell: bash
         run: |
           if [ -f "pyproject.toml" ]; then
@@ -70,64 +59,44 @@ jobs:
           fi
 
           echo "current_version=$current_version" >> "$GITHUB_OUTPUT"
-
-          tag_name="v$current_version"
-          if git rev-parse "refs/tags/$tag_name" >/dev/null 2>&1; then
-            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
-            echo "existing_tag=$tag_name" >> "$GITHUB_OUTPUT"
-          else
-            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Delete existing tag if needed
-        if: ${{ steps.check_tag.outputs.tag_exists == 'true' && steps.check_release_tag.outputs.has_release_tag == 'true' }}
-        shell: bash
-        run: |
-          tag_name="${{ steps.check_tag.outputs.existing_tag }}"
-          echo "删除已存在的标签: $tag_name"
-          git tag -d "$tag_name"
-          git push origin ":refs/tags/$tag_name"
+          echo "当前版本: $current_version"
 
       - name: Bump version (bump-my-version)
-        if: steps.check_release_tag.outputs.has_release_tag == 'true'
         id: bump
         uses: callowayproject/bump-my-version@master
         env:
           BUMPVERSION_TAG: "true"
           BUMPVERSION_COMMIT: "true"
         with:
-          args: ${{ steps.check_release_tag.outputs.bump_type }}
+          args: ${{ steps.validate.outputs.bump_type }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Print result
-        if: steps.check_release_tag.outputs.has_release_tag == 'true'
+      - name: Set tag name
+        id: set_tag
+        shell: bash
         run: |
-          if [ "${{ steps.bump.outputs.bumped }}" = "true" ]; then
-            echo "✅ 版本已更新： ${{ steps.bump.outputs.previous-version }} → ${{ steps.bump.outputs.current-version }}"
-            echo "🔖🔖🔖🔖 标签：v${{ steps.bump.outputs.current-version }}"
+          custom_tag="${{ inputs.tag_name || '' }}"
+          if [ -n "$custom_tag" ]; then
+            tag_name="$custom_tag"
+            echo "使用自定义标签: $tag_name"
           else
-            echo "ℹℹℹℹ️  未检测到版本变更（可能是同一版本或配置问题）"
+            tag_name="v${{ steps.bump.outputs.current-version }}"
+            echo "使用版本标签: $tag_name"
           fi
 
-      - name: Comment on PR with tag info
-        if: ${{ steps.bump.outputs.bumped == 'true' && steps.check_release_tag.outputs.has_release_tag == 'true' }}
-        uses: actions/github-script@v6
-        env:
-          PREV: ${{ steps.bump.outputs.previous-version }}
-          CUR: ${{ steps.bump.outputs.current-version }}
-          BUMP_TYPE: ${{ steps.check_release_tag.outputs.bump_type }}
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const pr = context.payload.pull_request;
-            const body = `🔖🔖🔖🔖 已创建标签 \`v${process.env.CUR}\`，从 \`${process.env.PREV}\` 升级为 \`${process.env.CUR}\` (由${process.env.BUMP_TYPE} Release标签触发).`;
-            await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: pr.number, body });
+          echo "tag_name=$tag_name" >> $GITHUB_OUTPUT
+
+      - name: Print version info
+        run: |
+          echo "✅ 版本已更新： ${{ steps.bump.outputs.previous-version }} → ${{ steps.bump.outputs.current-version }}"
+          echo "🔖 标签：${{ steps.set_tag.outputs.tag_name }}"
+          echo "📈 更新类型：${{ inputs.bump_type }}"
 
   build:
-    name: Release
+    name: Build and Release
     runs-on: ubuntu-latest
     needs: bump-version
-    if: always()
+    if: success()
 
     steps:
       - name: Checkout
@@ -144,12 +113,18 @@ jobs:
       - name: 构建
         run: uv build --clear
 
-      - name: Create or Update Release
+      - name: Extract release notes section
+        id: extract_notes
+        shell: bash
+        run: |
+          awk '/^### /{i++}i==1{print}i==2{exit}' CHANGELOG.md | sed '1d' > RELEASE_BODY.md
+
+      - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          body_path: CHANGELOG.md
+          tag_name: ${{ needs.bump-version.outputs.tag_name }}
+          body_path: RELEASE_BODY.md
           draft: false
           prerelease: false
           files: |
@@ -158,15 +133,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Handle release updates
-        if: steps.create_release.outcome == 'success'
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const releaseId = '${{ steps.create_release.outputs.id }}';
-            const tagName = '${{ github.ref_name }}';
-
-            if (releaseId) {
-              console.log(`✅ 发行版 ${tagName} 处理完成`);
-            }
+      - name: Release success message
+        run: |
+          echo "✅ 发行版 ${{ needs.bump-version.outputs.tag_name }} 创建成功"
