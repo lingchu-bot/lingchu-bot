@@ -1,0 +1,172 @@
+name: Auto release on PR merge with Release tag
+
+on:
+  pull_request:
+    types: [closed, labeled, unlabeled, synchronize]
+    branches: [main]
+  push:
+    tags:
+      - "v**"
+
+permissions:
+  contents: write
+  pull-requests: read
+  id-token: write
+
+jobs:
+  bump-version:
+    name: Bump version when dev merged with Release tag
+    if: ${{ github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'dev' && (contains(github.event.pull_request.labels.*.name, 'Release major') || contains(github.event.pull_request.labels.*.name, 'Release minor') || contains(github.event.pull_request.labels.*.name, 'Release patch')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify Release tag exists
+        id: check_release_tag
+        shell: bash
+        run: |
+          # 检查PR标签中是否有Release标签
+          labels=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH")
+          has_release_tag=false
+          bump_type="patch"
+          for label in $labels; do
+            if [[ $label == 'Release major' ]]; then
+              has_release_tag=true
+              bump_type="major"
+              break
+            elif [[ $label == 'Release minor' ]]; then
+              has_release_tag=true
+              bump_type="minor"
+              break
+            elif [[ $label == 'Release patch' ]]; then
+              has_release_tag=true
+              break
+            fi
+          done
+
+          if [ "$has_release_tag" = "true" ]; then
+            echo "Found Release tag"
+            echo "has_release_tag=true" >> $GITHUB_OUTPUT
+            echo "bump_type=$bump_type" >> $GITHUB_OUTPUT
+          else
+            echo "No Release tag found in PR labels"
+            echo "has_release_tag=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if tag exists and get current version
+        if: steps.check_release_tag.outputs.has_release_tag == 'true'
+        id: check_tag
+        shell: bash
+        run: |
+          if [ -f "pyproject.toml" ]; then
+            current_version=$(grep -E '^version =' pyproject.toml | cut -d'"' -f2)
+          elif [ -f "setup.py" ]; then
+            current_version=$(grep -E 'version=' setup.py | cut -d"'" -f2)
+          else
+            current_version="0.0.0"
+          fi
+
+          echo "current_version=$current_version" >> "$GITHUB_OUTPUT"
+
+          tag_name="v$current_version"
+          if git rev-parse "refs/tags/$tag_name" >/dev/null 2>&1; then
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+            echo "existing_tag=$tag_name" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Delete existing tag if needed
+        if: ${{ steps.check_tag.outputs.tag_exists == 'true' && steps.check_release_tag.outputs.has_release_tag == 'true' }}
+        shell: bash
+        run: |
+          tag_name="${{ steps.check_tag.outputs.existing_tag }}"
+          echo "删除已存在的标签: $tag_name"
+          git tag -d "$tag_name"
+          git push origin ":refs/tags/$tag_name"
+
+      - name: Bump version (bump-my-version)
+        if: steps.check_release_tag.outputs.has_release_tag == 'true'
+        id: bump
+        uses: callowayproject/bump-my-version@master
+        env:
+          BUMPVERSION_TAG: "true"
+          BUMPVERSION_COMMIT: "true"
+        with:
+          args: ${{ steps.check_release_tag.outputs.bump_type }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Print result
+        if: steps.check_release_tag.outputs.has_release_tag == 'true'
+        run: |
+          if [ "${{ steps.bump.outputs.bumped }}" = "true" ]; then
+            echo "✅ 版本已更新： ${{ steps.bump.outputs.previous-version }} → ${{ steps.bump.outputs.current-version }}"
+            echo "🔖🔖🔖🔖 标签：v${{ steps.bump.outputs.current-version }}"
+          else
+            echo "ℹℹℹℹ️  未检测到版本变更（可能是同一版本或配置问题）"
+          fi
+
+      - name: Comment on PR with tag info
+        if: ${{ steps.bump.outputs.bumped == 'true' && steps.check_release_tag.outputs.has_release_tag == 'true' }}
+        uses: actions/github-script@v6
+        env:
+          PREV: ${{ steps.bump.outputs.previous-version }}
+          CUR: ${{ steps.bump.outputs.current-version }}
+          BUMP_TYPE: ${{ steps.check_release_tag.outputs.bump_type }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const body = `🔖🔖🔖🔖 已创建标签 \`v${process.env.CUR}\`，从 \`${process.env.PREV}\` 升级为 \`${process.env.CUR}\` (由${process.env.BUMP_TYPE} Release标签触发).`;
+            await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: pr.number, body });
+
+  build:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: bump-version
+    if: always()
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 安装 uv 并依赖
+        uses: astral-sh/setup-uv@v7.1.6
+        with:
+          github-token: ${{ github.token }}
+          enable-cache: "auto"
+
+      - name: 构建
+        run: uv build --clear
+
+      - name: Create or Update Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+          files: |
+            dist/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Handle release updates
+        if: steps.create_release.outcome == 'success'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const releaseId = '${{ steps.create_release.outputs.id }}';
+            const tagName = '${{ github.ref_name }}';
+
+            if (releaseId) {
+              console.log(`✅ 发行版 ${tagName} 处理完成`);
+            }

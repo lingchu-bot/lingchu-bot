@@ -1,17 +1,20 @@
 <div align="center">
   <h1>✨Re-灵初bot✨</h1>
-  
-  <a name="readme-top"><img src="https://socialify.git.ci/lingchu-bot/lingchu-bot/image?custom_description=%E7%94%B1Nonebot2%E9%A9%B1%E5%8A%A8%E7%9A%84QQ%E7%AE%A1%E7%90%86%E6%9C%BA%E5%99%A8%E4%BA%BA&description=1&font=Inter&forks=1&issues=1&language=1&name=1&owner=1&pattern=Overlapping+Hexagons&pulls=1&theme=Auto" alt="lingchu-bot" width="640" height="320" /></a>
-  
+  <div align="center">
+    <a name="readme-logo"><img width="256" height="256" alt="logo" src="https://github.com/user-attachments/assets/35ad72ab-43d6-438d-949a-37f3e4af8a4a" /></a>
+  </div><br/>
+
+
 [![][license-shield]][license-link] [![][docs-shield]][docs-link] [![][github-release-shield]][github-release-link] [![][github-stars-shield]][github-stars-link]
 ![CodeRabbit Pull Request Reviews][CodeRabbit-link]
 
-![ide-link-1] ![ide-link-2] ![managed]
+![ide-link-1] ![ide-link-2] ![managed-link]
 
 </div>
 
 > [!WARNING]
 > 🚧Pre-alpha阶段，项目暂不可用🚧
+> 
 > 最新进展请关注[dev分支](https://github.com/lingchu-bot/lingchu-bot/tree/dev)
 
 <div>
@@ -156,16 +159,6 @@ DEFAULT_COMMAND_START=""                             #默认命令前缀，多�
 
 ## 许可证
 
-``` md
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
 本项目使用复合许可证，包含 LGPL-3.0 和 GNU FDL。
 详细说明请参见[Repository Policy](Repository-Policy.md)。
 许可证文本参见[LICENSE-code](LICENSE-code)和[LICENSE-docs](./LICENSE-docs)。
@@ -186,14 +179,17 @@ SOFTWARE.
 
 [nonebot-plugin-orm](https://github.com/nonebot/plugin-orm)
 
-[NiceGUI](https://nicegui.io/)
-
 ### 本项目依赖下列依赖:
 
 [依赖列表](https://github.com/lingchu-bot/lingchu-bot/network/dependencies)
 
 </div>
-
+<!--
+  <div align="center">
+    <a name="readme-top"><img src="https://socialify.git.ci/lingchu-bot/lingchu-bot/image?custom_description=%E7%94%B1Nonebot2%E9%A9%B1%E5%8A%A8%E7%9A%84QQ%E7%AE%A1%E7%90%86%E6%9C%BA%E5%99%A8%E4%BA%BA&description=1&font=Inter&forks=1&issues=1&language=1&name=1&owner=1&pattern=Overlapping+Hexagons&pulls=1&theme=Auto" alt="lingchu-bot" width="640" height="320" /></a>
+    <a name="readme-banner"><img width="899" height="567" alt="banner" src="https://github.com/user-attachments/assets/db779db0-e2b1-493b-9fa3-0efcac22a2ac" /></a>
+  </div>
+-->
 <div>
 <!-- official link -->
 
@@ -203,7 +199,7 @@ SOFTWARE.
 [license-link]: https://www.gnu.org/licenses/lgpl-3.0.html
 [github-release-link]: https://github.com/lingchu-bot/lingchu-bot/releases/latest
 [github-stars-link]: https://github.com/lingchu-bot/lingchu-bot
-[managed]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json
+[managed-link]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json
 
 <!-- Shield link-->
 [docs-shield]: https://img.shields.io/badge/documentation-148F76
