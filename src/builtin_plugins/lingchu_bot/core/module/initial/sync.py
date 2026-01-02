@@ -38,3 +38,15 @@ async def disconnect_sync(bot: Bot) -> None:
             "login_status": False,
         },
     )
+
+
+@driver.on_shutdown
+async def shutdown_sync() -> None:
+    logger.info("退出准备，开始处理数据库事项")
+    await client.update(
+        model=models.LoginInfo,
+        filters={"login_status": True},
+        values={
+            "login_status": False,
+        },
+    )

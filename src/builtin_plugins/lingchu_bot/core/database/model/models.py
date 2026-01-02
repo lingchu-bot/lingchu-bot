@@ -15,7 +15,7 @@ class LoginInfo(Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     login_id: Mapped[int] = mapped_column(unique=True, index=True)
     login_name: Mapped[str] = mapped_column(index=True)
-    login_status: Mapped[bool] = mapped_column(default=0, index=True)
+    login_status: Mapped[bool] = mapped_column(index=True, default=False)
     loaded_plugins: Mapped[list[str]] = mapped_column(JSON, default=list)
 
 
