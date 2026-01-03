@@ -62,7 +62,7 @@ class GlobalChatConfig(Model):
 
 
 class GroupList(Model):
-    """群聊列表"""
+    """群聊列表（群组列表）"""
 
     id: Mapped[int] = mapped_column(primary_key=True)
     group_id: Mapped[int] = mapped_column(unique=True, index=True)
@@ -87,18 +87,20 @@ class GroupConfig(Model):
 
 
 class ChatList(Model):
-    """聊天列表（私聊/临时会话）"""
+    """聊天列表（好友列表）"""
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[str] = mapped_column(unique=True, index=True)
-    state: Mapped[int] = mapped_column(default=0)
+    user_id: Mapped[int] = mapped_column(unique=True, index=True)
+    nickname: Mapped[str] = mapped_column()
+    remark: Mapped[str] = mapped_column()
+    state: Mapped[bool] = mapped_column(default=False)
     chat_config: Mapped["ChatConfig"] = relationship(
         back_populates="chat", uselist=False, cascade="all, delete-orphan"
     )
 
 
 class ChatConfig(Model):
-    """聊天配置（私聊/临时会话）"""
+    """聊天配置（好友聊天）"""
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[str] = mapped_column(

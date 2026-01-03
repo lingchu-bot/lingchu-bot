@@ -9,7 +9,7 @@
 middleware/
 ├── __init__.py
 ├── napcat/
-├── llonebot/
+├── LuckyLilliaBot/
 └── README.md
 
 ```
@@ -18,5 +18,5 @@ middleware/
 
 - `__init__.py`：中间件的入口文件，负责加载和管理不同的OneBot实现的中间件。
 - `napcat/`：Napcat实现的中间件。
-- `llonebot/`：LLOneBot实现的中间件。
+- `LuckyLilliaBot/`：LLOneBot实现的中间件。
 - `README.md`：中间件模块的说明文档。

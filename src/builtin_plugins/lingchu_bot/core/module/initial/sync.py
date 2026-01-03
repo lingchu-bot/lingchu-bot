@@ -26,6 +26,18 @@ async def connect_sync(bot: Bot) -> None:
             "loaded_plugins": plugins,
         },
     )
+    # logger.info("建立连接，开始更新数据库")
+    # friend_list: str = (await bot.get_friend_list())["nickname"]
+    # await client.update_or_create(
+    #     model=models.ChatList,
+    #     filters={"login_id": bot.self_id},
+    #     defaults={
+    #         "login_id": bot.self_id,
+    #         "login_name": friend_list,
+    #         "login_status": True,
+    #         "loaded_plugins": plugins,
+    #     },
+    # )
 
 
 @driver.on_bot_disconnect
