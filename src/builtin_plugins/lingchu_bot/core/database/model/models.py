@@ -91,8 +91,8 @@ class ChatList(Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(unique=True, index=True)
-    nickname: Mapped[str] = mapped_column()
-    remark: Mapped[str] = mapped_column()
+    nickname: Mapped[str] = mapped_column(default="")
+    remark: Mapped[str] = mapped_column(nullable=True)
     state: Mapped[bool] = mapped_column(default=False)
     chat_config: Mapped["ChatConfig"] = relationship(
         back_populates="chat", uselist=False, cascade="all, delete-orphan"
@@ -103,7 +103,7 @@ class ChatConfig(Model):
     """聊天配置（好友聊天）"""
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[str] = mapped_column(
+    user_id: Mapped[int] = mapped_column(
         ForeignKey("lingchu_bot_chatlist.user_id"), unique=True
     )
     chat: Mapped["ChatList"] = relationship(back_populates="chat_config")

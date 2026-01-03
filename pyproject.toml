@@ -1,6 +1,6 @@
 [project]
 name = "lingchu-bot"
-version = "0.0.0-dev"
+version = "0.0.0-dev0"
 description = "由NoneBot2驱动，符合Onebot11规范的管理机器人"
 keywords = ["onebot11", "nonebot2"]
 readme = "README.md"
