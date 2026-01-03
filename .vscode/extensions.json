@@ -6,7 +6,6 @@
     "ms-python.debugpy",
     "qwtel.sqlite-viewer",
     "ms-vscode.powershell",
-    "ms-pyright.pyright",
     "ms-python.python"
   ]
 }

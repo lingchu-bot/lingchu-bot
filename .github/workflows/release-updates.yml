@@ -9,13 +9,11 @@ on:
         default: "patch"
         type: choice
         options:
-          - patch
-          - minor
-          - major
-      tag_name:
-        description: "Custom tag name (optional, will use bumped version if empty)"
-        required: false
-        type: string
+          - patch # 迭代补丁发行版本,如：1.0.0-dev1 -> 1.0.1
+          - minor # 迭代次要发行版本,如：1.0.0-dev1 -> 1.1.0
+          - major # 迭代主要发行版本,如：1.0.0-dev1 -> 2.0.0
+          - pre_l # 提升预发行阶段，如：1.0.0-dev1 -> 1.0.0-alpha0
+          - pre_n # 迭代预发行版本，如：1.0.0-dev1 -> 1.0.0-dev2
 
 permissions:
   contents: write
@@ -27,7 +25,8 @@ jobs:
     name: Bump version and create release
     runs-on: ubuntu-latest
     outputs:
-      tag_name: ${{ steps.set_tag.outputs.tag_name }}
+      current-version: ${{ steps.bump.outputs.current-version }}
+      previous-version: ${{ steps.bump.outputs.previous-version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,68 +34,25 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Validate bump type
-        id: validate
-        shell: bash
-        run: |
-          bump_type="${{ github.event.inputs.bump_type }}"
-          if [[ ! "$bump_type" =~ ^(patch|minor|major)$ ]]; then
-            echo "❌ 错误的 bump_type: $bump_type. 必须是 patch, minor 或 major"
-            exit 1
-          fi
-          echo "bump_type=$bump_type" >> $GITHUB_OUTPUT
-
-      - name: Get current version
-        id: get_version
-        shell: bash
-        run: |
-          if [ -f "pyproject.toml" ]; then
-            current_version=$(grep -E '^version =' pyproject.toml | cut -d'"' -f2)
-          elif [ -f "setup.py" ]; then
-            current_version=$(grep -E 'version=' setup.py | cut -d"'" -f2)
-          else
-            current_version="0.0.0"
-          fi
-
-          echo "current_version=$current_version" >> "$GITHUB_OUTPUT"
-          echo "当前版本: $current_version"
-
-      - name: Bump version (bump-my-version)
+      - name: Bump version
         id: bump
         uses: callowayproject/bump-my-version@master
         env:
           BUMPVERSION_TAG: "true"
           BUMPVERSION_COMMIT: "true"
         with:
-          args: ${{ steps.validate.outputs.bump_type }}
+          args: ${{ github.event.inputs.bump_type }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set tag name
-        id: set_tag
-        shell: bash
-        run: |
-          custom_tag="${{ inputs.tag_name || '' }}"
-          if [ -n "$custom_tag" ]; then
-            tag_name="$custom_tag"
-            echo "使用自定义标签: $tag_name"
-          else
-            tag_name="v${{ steps.bump.outputs.current-version }}"
-            echo "使用版本标签: $tag_name"
-          fi
-
-          echo "tag_name=$tag_name" >> $GITHUB_OUTPUT
-
-      - name: Print version info
-        run: |
-          echo "✅ 版本已更新： ${{ steps.bump.outputs.previous-version }} → ${{ steps.bump.outputs.current-version }}"
-          echo "🔖 标签：${{ steps.set_tag.outputs.tag_name }}"
-          echo "📈 更新类型：${{ inputs.bump_type }}"
+      - name: Check bump result
+        if: steps.bump.outputs.bumped != 'true'
+        run: exit 1
 
   build:
     name: Build and Release
     runs-on: ubuntu-latest
     needs: bump-version
-    if: success()
+    if: needs.bump-version.result == 'success'
 
     steps:
       - name: Checkout
@@ -104,35 +60,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 安装 uv 并依赖
+      - name: Install dependencies
         uses: astral-sh/setup-uv@v7.1.6
         with:
           github-token: ${{ github.token }}
           enable-cache: "auto"
 
-      - name: 构建
+      - name: Build
         run: uv build --clear
 
-      - name: Extract release notes section
+      - name: Extract release notes
         id: extract_notes
-        shell: bash
         run: |
           awk '/^### /{i++}i==1{print}i==2{exit}' CHANGELOG.md | sed '1d' > RELEASE_BODY.md
 
       - name: Create Release
-        id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.bump-version.outputs.tag_name }}
+          tag_name: v${{ needs.bump-version.outputs.current-version }}
           body_path: RELEASE_BODY.md
           draft: false
-          prerelease: false
+          prerelease: ${{ github.event.inputs.bump_type == 'pre_l' || github.event.inputs.bump_type == 'pre_n' }}
           files: |
             dist/*
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Release success message
-        run: |
-          echo "✅ 发行版 ${{ needs.bump-version.outputs.tag_name }} 创建成功"

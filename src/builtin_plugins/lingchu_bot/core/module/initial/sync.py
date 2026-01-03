@@ -26,6 +26,18 @@ async def connect_sync(bot: Bot) -> None:
             "loaded_plugins": plugins,
         },
     )
+    # logger.info("建立连接，开始更新数据库")
+    # friend_list: str = (await bot.get_friend_list())["nickname"]
+    # await client.update_or_create(
+    #     model=models.ChatList,
+    #     filters={"login_id": bot.self_id},
+    #     defaults={
+    #         "login_id": bot.self_id,
+    #         "login_name": friend_list,
+    #         "login_status": True,
+    #         "loaded_plugins": plugins,
+    #     },
+    # )
 
 
 @driver.on_bot_disconnect
@@ -35,6 +47,18 @@ async def disconnect_sync(bot: Bot) -> None:
         model=models.LoginInfo,
         filters={"login_id": bot.self_id},
         defaults={
+            "login_status": False,
+        },
+    )
+
+
+@driver.on_shutdown
+async def shutdown_sync() -> None:
+    logger.info("退出准备，开始处理数据库事项")
+    await client.update(
+        model=models.LoginInfo,
+        filters={"login_status": True},
+        values={
             "login_status": False,
         },
     )

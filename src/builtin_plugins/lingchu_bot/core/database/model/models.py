@@ -15,7 +15,7 @@ class LoginInfo(Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     login_id: Mapped[int] = mapped_column(unique=True, index=True)
     login_name: Mapped[str] = mapped_column(index=True)
-    login_status: Mapped[bool] = mapped_column(default=0, index=True)
+    login_status: Mapped[bool] = mapped_column(index=True, default=False)
     loaded_plugins: Mapped[list[str]] = mapped_column(JSON, default=list)
 
 
@@ -62,7 +62,7 @@ class GlobalChatConfig(Model):
 
 
 class GroupList(Model):
-    """群聊列表"""
+    """群聊列表（群组列表）"""
 
     id: Mapped[int] = mapped_column(primary_key=True)
     group_id: Mapped[int] = mapped_column(unique=True, index=True)
@@ -87,21 +87,23 @@ class GroupConfig(Model):
 
 
 class ChatList(Model):
-    """聊天列表（私聊/临时会话）"""
+    """聊天列表（好友列表）"""
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[str] = mapped_column(unique=True, index=True)
-    state: Mapped[int] = mapped_column(default=0)
+    user_id: Mapped[int] = mapped_column(unique=True, index=True)
+    nickname: Mapped[str] = mapped_column(default="")
+    remark: Mapped[str] = mapped_column(nullable=True)
+    state: Mapped[bool] = mapped_column(default=False)
     chat_config: Mapped["ChatConfig"] = relationship(
         back_populates="chat", uselist=False, cascade="all, delete-orphan"
     )
 
 
 class ChatConfig(Model):
-    """聊天配置（私聊/临时会话）"""
+    """聊天配置（好友聊天）"""
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[str] = mapped_column(
+    user_id: Mapped[int] = mapped_column(
         ForeignKey("lingchu_bot_chatlist.user_id"), unique=True
     )
     chat: Mapped["ChatList"] = relationship(back_populates="chat_config")
