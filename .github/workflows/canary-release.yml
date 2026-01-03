@@ -1,0 +1,32 @@
+name: Canary Release
+
+on:
+    push:
+        branches:
+            - dev
+
+permissions:
+    contents: write
+    pull-requests: read
+    id-token: write
+
+jobs:
+    canary-release:
+        name: Canary Release on Push
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Bump canary version (bump-my-version)
+              id: bump
+              uses: callowayproject/bump-my-version@master
+              env:
+                  BUMPVERSION_TAG: "true"
+                  BUMPVERSION_COMMIT: "true"
+              with:
+                  args: pre_n
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
