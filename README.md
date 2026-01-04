@@ -68,25 +68,32 @@
 
 # 如何开始
 
-安装 Python
+安装 Python (必须)
 
 ```bash
 https://www.python.org/downloads/latest/python3.13/
 ```
 
-安装 uv
+安装 uv (推荐)
 
 ```bash
+# 我们使用 uv 管理依赖，也可仅使用Python自带的pip以及其他包管理，但不保证兼容性
 powershell -ExecutionPolicy ByPass -c "irm https://pdm-project.org/install.ps1 | iex"
 ```
 
-安装nb-cli
+安装nb-cli (推荐)
 
 ```bash
-uvx nb-cli #等价uv tool run nb-cli,临时使用
+# 生产推荐、使用 pipx ( nonebot 官方使用)
+pipx install nb-cli 
+# 快速安装pipx:
+python -m pip install --user pipx
+python -m pipx ensurepath
 ```
+
 ```bash
-uv tool install nb-cli #持久安装(推荐)
+# 开发推荐、使用 uv （tip: 安装的nb-cli部分功能异常，仅用于不想额外安装pipx的情况）
+uv tool install nb-cli 
 ```
 
 </div>
@@ -100,10 +107,17 @@ uv tool install nb-cli #持久安装(推荐)
 
 ##### 以下操作需在终端执行，且目录无中文字符(带有中文字符可能出现意料之外的错误)
 
-克隆项目到本地
+克隆或下载项目到本地
 
 ```bash
-git clone https://github.com/xinvxueyuan/lingchu-bot.git
+# 生产克隆
+git clone --depth 1 --single-branch --branch main https://github.com/lingchu-bot/lingchu-bot.git
+# 开发克隆
+git clone --single-branch --branch dev https://github.com/lingchu-bot/lingchu-bot.git
+# 生产下载
+从本仓库的Release页面获取
+# 开发下载
+
 ```
 
 进入项目目录

@@ -21,7 +21,6 @@ on:
       - "hotfix/*"
     paths:
       - "**/*.py"
-  workflow_dispatch:
 
 permissions:
   contents: write

@@ -74,6 +74,13 @@ jobs:
         run: |
           awk '/^### /{i++}i==1{print}i==2{exit}' CHANGELOG.md | sed '1d' > RELEASE_BODY.md
 
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: "dist/*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
