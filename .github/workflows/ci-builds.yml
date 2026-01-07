@@ -1,6 +1,7 @@
 name: CI-builds
 
 on:
+    workflow_dispatch:
     pull_request:
         branches:
             - main
@@ -11,6 +12,7 @@ on:
             - "hotfix/*"
         paths:
             - "**/*.py"
+            - "**/LICENSE*"
     push:
         branches:
             - main
@@ -21,11 +23,13 @@ on:
             - "hotfix/*"
         paths:
             - "**/*.py"
+            - "**/LICENSE*"
 
 permissions:
     contents: write
     pull-requests: read
     id-token: write
+    attestations: write
 
 jobs:
     build:
