@@ -25,3 +25,7 @@ core.index_init()
 sub_plugins = nonebot.load_plugins(
     str(Path(__file__).parent.joinpath("plugins").resolve())
 )
+
+
+# 公共接口
+from .core.api import apimount as apimount
