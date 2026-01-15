@@ -9,8 +9,6 @@ from ...database.model import models
 
 driver = get_driver()
 
-plugins: list[str] = [plugin.name for plugin in get_loaded_plugins()]
-
 
 @driver.on_bot_connect
 async def connect_sync(bot: Bot) -> None:
@@ -23,9 +21,10 @@ async def connect_sync(bot: Bot) -> None:
             "login_id": bot.self_id,
             "login_name": login_name,
             "login_status": True,
-            "loaded_plugins": plugins,
+            "loaded_plugins": [plugin.name for plugin in get_loaded_plugins()],
         },
     )
+    # TODO: 实现周期性同步
     # logger.info("建立连接，开始更新数据库")
     # friend_list: str = (await bot.get_friend_list())["nickname"]
     # await client.update_or_create(

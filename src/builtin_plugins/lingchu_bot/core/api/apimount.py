@@ -341,7 +341,7 @@ class DeleteReq(BaseModel):
 
 
 @app.get(
-    "/api/db/models",
+    "/api/v1/db/models",
     tags=["db"],
     summary="获取模型列表",
     response_model=ModelsResponse,
@@ -357,7 +357,7 @@ async def list_models() -> ModelsResponse:
 
 
 @app.get(
-    "/api/db/health",
+    "/api/v1/db/health",
     tags=["health"],
     summary="数据库健康检查",
     response_model=HealthResponse,
@@ -380,7 +380,7 @@ async def health_check() -> HealthResponse:
 
 
 @app.post(
-    "/api/db/{model_name}/create",
+    "/api/v1/db/{model_name}/create",
     tags=["db"],
     summary="创建记录",
     response_model=RecordResponse,
@@ -431,7 +431,7 @@ async def api_create(
 
 
 @app.post(
-    "/api/db/{model_name}/get_one",
+    "/api/v1/db/{model_name}/get_one",
     tags=["db"],
     summary="查询单条记录",
     response_model=RecordResponse,
@@ -462,7 +462,7 @@ async def api_get_one(
 
 
 @app.post(
-    "/api/db/{model_name}/list",
+    "/api/v1/db/{model_name}/list",
     tags=["db"],
     summary="查询列表",
     response_model=RecordListResponse,
@@ -504,7 +504,7 @@ async def api_list(
 
 
 @app.post(
-    "/api/db/{model_name}/count",
+    "/api/v1/db/{model_name}/count",
     tags=["db"],
     summary="统计数量",
     response_model=CountResponse,
@@ -532,7 +532,7 @@ async def api_count(
 
 
 @app.post(
-    "/api/db/{model_name}/update",
+    "/api/v1/db/{model_name}/update",
     tags=["db"],
     summary="更新记录",
     response_model=AffectedResponse,
@@ -583,7 +583,7 @@ async def api_update(
 
 
 @app.post(
-    "/api/db/{model_name}/delete",
+    "/api/v1/db/{model_name}/delete",
     tags=["db"],
     summary="删除记录",
     response_model=AffectedResponse,

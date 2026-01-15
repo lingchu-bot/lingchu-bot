@@ -68,25 +68,35 @@
 
 # 如何开始
 
-安装 Python
+安装 Python (必须)
 
 ```bash
 https://www.python.org/downloads/latest/python3.13/
 ```
 
-安装 uv
+安装 uv (推荐)
 
 ```bash
-powershell -ExecutionPolicy ByPass -c "irm https://pdm-project.org/install.ps1 | iex"
+# 我们使用 uv 管理依赖，也可仅使用Python自带的pip以及其他包管理，但不保证兼容性
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+# MacOS and Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-安装nb-cli
+安装nb-cli (推荐)
 
 ```bash
-uvx nb-cli #等价uv tool run nb-cli,临时使用
+# 生产推荐、使用 pipx ( nonebot 官方使用)
+pipx install nb-cli 
+# 快速安装pipx:
+python -m pip install --user pipx
+python -m pipx ensurepath
 ```
+
 ```bash
-uv tool install nb-cli #持久安装(推荐)
+# 开发推荐、使用 uv （tip: 安装的nb-cli部分功能异常，仅用于不想额外安装pipx的情况）
+uv tool install nb-cli 
 ```
 
 </div>
@@ -100,10 +110,17 @@ uv tool install nb-cli #持久安装(推荐)
 
 ##### 以下操作需在终端执行，且目录无中文字符(带有中文字符可能出现意料之外的错误)
 
-克隆项目到本地
+克隆或下载项目到本地
 
 ```bash
-git clone https://github.com/xinvxueyuan/lingchu-bot.git
+# 生产克隆
+git clone --depth 1 --single-branch --branch main https://github.com/lingchu-bot/lingchu-bot.git
+# 开发克隆
+git clone --single-branch --branch dev https://github.com/lingchu-bot/lingchu-bot.git
+# 生产下载
+从本仓库的 Release 发行资产页面获取
+# 开发下载
+从本仓库的 ci-builds 工作流资产页面获取
 ```
 
 进入项目目录
@@ -207,8 +224,8 @@ DEFAULT_COMMAND_START=""                             #默认命令前缀，多�
 
 <!-- Shield link-->
 [docs-shield]: https://img.shields.io/badge/Documentation-00b0aa
-[github-release-shield]: https://img.shields.io/github/v/release/xinvxueyuan/lingchu-bot
-[github-stars-shield]: https://img.shields.io/github/stars/xinvxueyuan/lingchu-bot?color=%231890FF&style=flat-square
+[github-release-shield]: https://img.shields.io/github/v/release/lingchu-bot/lingchu-bot
+[github-stars-shield]: https://img.shields.io/github/stars/lingchu-bot/lingchu-bot?color=%231890FF&style=flat-square
 [license-shield]: https://img.shields.io/github/license/lingchu-bot/lingchu-bot
 [zread-shield]: https://img.shields.io/badge/Ask_Zread-_.svg?style=plastic&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff
 [zread-link]: https://zread.ai/lingchu-bot/lingchu-bot

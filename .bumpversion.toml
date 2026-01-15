@@ -26,13 +26,19 @@ tag_message = "Bump version: {current_version} → {new_version}"
 allow_dirty = false
 commit = false
 message = "Bump version: {current_version} → {new_version}"
-moveable_tags = []
+moveable_tags = [
+    "latest",
+    "v{new_major}.{new_minor}",
+    "v{new_major}"
+]
 commit_args = ""
 setup_hooks = []
 pre_commit_hooks = []
 post_commit_hooks = []
 [[tool.bumpversion.files]]
 filename = "pyproject.toml"
+search = "version = \"{current_version}\""
+replace = "version = \"{new_version}\""
 [tool.bumpversion.parts.pre_l]
 values = ["dev", "alpha", "beta", "rc"]
 optional_value = "rc"

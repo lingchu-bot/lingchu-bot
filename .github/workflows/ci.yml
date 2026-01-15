@@ -4,24 +4,27 @@ on:
   pull_request:
     branches:
       - main
-      - "dev*"
+      - dev
+      - "dev**"
       - "releases/**"
       - "feature/**"
       - "fix/**"
       - "hotfix/*"
     paths:
+      - "**/*.yml"
       - "**/*.py"
   push:
     branches:
       - main
-      - "dev*"
+      - dev
+      - "dev**"
       - "releases/**"
       - "feature/**"
       - "fix/**"
       - "hotfix/*"
     paths:
+      - "**/*.yml"
       - "**/*.py"
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -39,10 +42,12 @@ jobs:
           fetch-depth: 0
 
       - name: 安装 uv 并依赖
-        uses: astral-sh/setup-uv@v7.1.6
+        uses: astral-sh/setup-uv@v7
         with:
+          resolution-strategy: "highest"
           github-token: ${{ github.token }}
-          enable-cache: "auto"
+          python-version: "3.13"
+          enable-cache: "false"
 
       - name: 安装依赖 (dev)
         run: uv sync --only-dev
@@ -60,10 +65,12 @@ jobs:
           fetch-depth: 0
 
       - name: 安装 uv 并依赖
-        uses: astral-sh/setup-uv@v7.1.6
+        uses: astral-sh/setup-uv@v7
         with:
+          resolution-strategy: "highest"
           github-token: ${{ github.token }}
-          enable-cache: "auto"
+          python-version: "3.13"
+          enable-cache: "false"
 
       - name: 安装依赖 (dev)
         run: uv sync --only-dev
@@ -81,10 +88,12 @@ jobs:
           fetch-depth: 0
 
       - name: 安装 uv 并依赖
-        uses: astral-sh/setup-uv@v7.1.6
+        uses: astral-sh/setup-uv@v7
         with:
+          resolution-strategy: "highest"
           github-token: ${{ github.token }}
-          enable-cache: "auto"
+          python-version: "3.13"
+          enable-cache: "false"
 
       - name: 安装依赖 (dev)
         run: uv sync --only-dev
@@ -108,20 +117,15 @@ jobs:
           fetch-depth: 0
 
       - name: 安装uv 并依赖
-        uses: astral-sh/setup-uv@v7.1.6
+        uses: astral-sh/setup-uv@v7
         with:
+          resolution-strategy: "highest"
           github-token: ${{ github.token }}
-          enable-cache: "auto"
+          python-version: "3.13"
+          enable-cache: "false"
 
       - name: 安装依赖
         run: uv sync --only-dev
 
-      - name: 设置提交作者
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
       - name: 检查代码格式
-        run: |
-          uv run ruff format --check .
-        shell: bash
+        run: uv run ruff format --check .

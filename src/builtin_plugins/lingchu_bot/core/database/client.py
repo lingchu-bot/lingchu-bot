@@ -3,10 +3,12 @@
 提供通用的ORM模型的增删查改（CRUD）操作，基于SQLAlchemy和nonebot_plugin_orm。
 """
 
+from nonebot import require
+
+require("nonebot_plugin_orm")
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, cast
 
-from nonebot import require
 from nonebot_plugin_orm import Model, get_session
 from sqlalchemy import delete as sqlalchemy_delete
 from sqlalchemy import func, select
@@ -16,8 +18,6 @@ from sqlalchemy.sql.elements import ColumnElement, UnaryExpression
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import CursorResult
-
-require("nonebot_plugin_orm")
 
 
 def _conds[T: Model](
