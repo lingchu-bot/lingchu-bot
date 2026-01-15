@@ -21,9 +21,7 @@ async def connect_sync(bot: Bot) -> None:
             "login_id": bot.self_id,
             "login_name": login_name,
             "login_status": True,
-            "loaded_plugins": list[str](
-                [plugin.name for plugin in get_loaded_plugins()]
-            ),
+            "loaded_plugins": [plugin.name for plugin in get_loaded_plugins()],
         },
     )
     # TODO: 实现周期性同步

@@ -1,7 +1,7 @@
 from nonebot.log import logger
 
 
-def check_init_status() -> bool:
+def check_init_status() -> bool | None:
     """机器人启动检查和配置"""
     # TODO: 检查逻辑
     try:
@@ -9,6 +9,7 @@ def check_init_status() -> bool:
         from .module.initial import sync as sync
     except Exception as e:  # noqa: BLE001
         logger.error(f"载入初始化模块失败: {e}")
+        return None
     return True
 
 
@@ -22,7 +23,7 @@ def index_init() -> None:
     logger.add(
         store.get_plugin_cache_dir() / "lingchu_bot.log",
         level="ERROR",
-        format="default_format",
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
         rotation="1 week",
     )
     match check_init_status():

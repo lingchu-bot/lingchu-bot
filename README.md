@@ -78,7 +78,10 @@ https://www.python.org/downloads/latest/python3.13/
 
 ```bash
 # 我们使用 uv 管理依赖，也可仅使用Python自带的pip以及其他包管理，但不保证兼容性
-powershell -ExecutionPolicy ByPass -c "irm https://pdm-project.org/install.ps1 | iex"
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+# MacOS and Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 安装nb-cli (推荐)
@@ -115,9 +118,9 @@ git clone --depth 1 --single-branch --branch main https://github.com/lingchu-bot
 # 开发克隆
 git clone --single-branch --branch dev https://github.com/lingchu-bot/lingchu-bot.git
 # 生产下载
-从本仓库的Release页面获取
+从本仓库的 Release 发行资产页面获取
 # 开发下载
-
+从本仓库的 ci-builds 工作流资产页面获取
 ```
 
 进入项目目录

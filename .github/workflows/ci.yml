@@ -47,7 +47,7 @@ jobs:
           resolution-strategy: "highest"
           github-token: ${{ github.token }}
           python-version: "3.13"
-          enable-cache: "flase"
+          enable-cache: "false"
 
       - name: 安装依赖 (dev)
         run: uv sync --only-dev
@@ -70,7 +70,7 @@ jobs:
           resolution-strategy: "highest"
           github-token: ${{ github.token }}
           python-version: "3.13"
-          enable-cache: "flase"
+          enable-cache: "false"
 
       - name: 安装依赖 (dev)
         run: uv sync --only-dev
@@ -93,7 +93,7 @@ jobs:
           resolution-strategy: "highest"
           github-token: ${{ github.token }}
           python-version: "3.13"
-          enable-cache: "flase"
+          enable-cache: "false"
 
       - name: 安装依赖 (dev)
         run: uv sync --only-dev
@@ -122,7 +122,7 @@ jobs:
           resolution-strategy: "highest"
           github-token: ${{ github.token }}
           python-version: "3.13"
-          enable-cache: "flase"
+          enable-cache: "false"
 
       - name: 安装依赖
         run: uv sync --only-dev
