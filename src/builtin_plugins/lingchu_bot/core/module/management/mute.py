@@ -1,32 +1,11 @@
 from nonebot import logger, on_startswith
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
-from nonebot.rule import Rule, StartswithRule
 from nonebot_plugin_alconna.uniseg import UniMessage
 
-ban_cmd = on_startswith(
-    "禁言",
-    rule=Rule(StartswithRule(msg=("禁言", "解禁", "全体禁言", "全体解禁"))),
-    priority=5,
-    block=True,
-)
-whole_ban_cmd = on_startswith(
-    "全体禁言",
-    rule=Rule(StartswithRule(msg=("禁言", "解禁", "全体禁言", "全体解禁"))),
-    priority=5,
-    block=True,
-)
-unban_cmd = on_startswith(
-    "解禁",
-    rule=Rule(StartswithRule(msg=("禁言", "解禁", "全体禁言", "全体解禁"))),
-    priority=5,
-    block=True,
-)
-whole_unban_cmd = on_startswith(
-    "全体解禁",
-    rule=Rule(StartswithRule(msg=("禁言", "解禁", "全体禁言", "全体解禁"))),
-    priority=5,
-    block=True,
-)
+ban_cmd = on_startswith("禁言", priority=5, block=True)
+whole_ban_cmd = on_startswith("全体禁言", priority=5, block=True)
+unban_cmd = on_startswith("解禁", priority=5, block=True)
+whole_unban_cmd = on_startswith("全体解禁", priority=5, block=True)
 
 
 # TODO: 实现具体功能

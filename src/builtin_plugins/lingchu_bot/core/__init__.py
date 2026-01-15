@@ -14,7 +14,17 @@ def check_init_status() -> bool:
 
 def index_init() -> None:
     """机器人核心部分初始化索引"""
-    logger.add("error.log", level="ERROR", format="default_format", rotation="1 week")
+    from nonebot import require
+
+    require("nonebot_plugin_localstore")
+    import nonebot_plugin_localstore as store
+
+    logger.add(
+        store.get_plugin_cache_dir() / "lingchu_bot.log",
+        level="ERROR",
+        format="default_format",
+        rotation="1 week",
+    )
     match check_init_status():
         case True:
             logger.info("使用用户配置启动")
