@@ -79,7 +79,7 @@ docs/_build/
 doc/_build/
 
 # zensical documentation
-!docs/dev/lib
+!docs/**
 
 # PyBuilder
 target/
