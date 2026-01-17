@@ -16,7 +16,7 @@ async def handle_feat_status(event: GroupMessageEvent) -> None:
         event, mode="permission", send_reply=False
     ):
         return
-    await client.update(
+    result = await client.update(
         model=models.LoginInfo,
         filters={"login_id": event.self_id},
         values={"feat_status": True},
@@ -25,7 +25,10 @@ async def handle_feat_status(event: GroupMessageEvent) -> None:
         f"{event.self_id}收到系统功能开关指令: {event.raw_message} "
         f"来自用户: {event.user_id}在群: {event.group_id}"
     )
-    await UniMessage.text("已开机").send(reply_to=True)
+    if result:
+        await UniMessage.text("已开机").send(reply_to=True)
+    else:
+        await UniMessage.text("开机失败，请重试或联系管理员").send(reply_to=True)
 
 
 @unfeat_status_cmd.handle()
@@ -34,7 +37,7 @@ async def handle_unfeat_status(event: GroupMessageEvent) -> None:
         event, mode="permission", send_reply=False
     ):
         return
-    await client.update(
+    result = await client.update(
         model=models.LoginInfo,
         filters={"login_id": event.self_id},
         values={"feat_status": False},
@@ -43,4 +46,7 @@ async def handle_unfeat_status(event: GroupMessageEvent) -> None:
         f"{event.self_id}收到系统功能开关指令: {event.raw_message} "
         f"来自用户: {event.user_id}在群: {event.group_id}"
     )
-    await UniMessage.text("已关机").send(reply_to=True)
+    if result:
+        await UniMessage.text("已关机").send(reply_to=True)
+    else:
+        await UniMessage.text("关机失败，请重试或联系管理员").send(reply_to=True)
