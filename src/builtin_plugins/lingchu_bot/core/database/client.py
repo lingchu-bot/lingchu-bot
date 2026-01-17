@@ -1,6 +1,10 @@
 """
 数据库CRUD函数
 提供通用的ORM模型的增删查改（CRUD）操作，基于SQLAlchemy和nonebot_plugin_orm。
+
+所有操作均返回 (结果, 状态) 或 (结果, 新建, 状态) 等元组：
+- 状态（bool）：True 表示操作成功，False 表示失败或异常。
+- 新建（bool）：部分函数用于区分是否新建（如 get_or_create, update_or_create）。
 """
 
 from nonebot import require
@@ -76,14 +80,15 @@ def _orders[T: Model](
 
 
 # 单条操作
-async def create[T: Model](model: type[T], **fields: Any) -> T:
+async def create[T: Model](model: type[T], **fields: Any) -> tuple[T | None, bool]:
     """
     创建一条新记录。
     参数：
         model: ORM模型类
         **fields: 字段名及其值
     返回：
-        新创建的模型对象
+        (新创建的模型对象, 状态)
+        状态为 True 表示成功，False 表示失败。
     """
     async with get_session() as s:
         obj = model(**fields)
@@ -93,18 +98,22 @@ async def create[T: Model](model: type[T], **fields: Any) -> T:
             await s.refresh(obj)
         except SQLAlchemyError:
             await s.rollback()
-            raise
-        return obj
+            return None, False
+        else:
+            return obj, True
 
 
-async def get_one[T: Model](model: type[T], filters: dict[str, Any]) -> T | None:
+async def get_one[T: Model](
+    model: type[T], filters: dict[str, Any]
+) -> tuple[T | None, bool]:
     """
     获取符合条件的单条记录。
     参数：
         model: ORM模型类
         filters: 字段名到值的映射
     返回：
-        查询到的模型对象或None
+        (模型对象或 None, 状态)
+        状态为 True 表示查到结果，False 表示无结果。
     """
     async with get_session() as s:
         stmt = select(model)
@@ -113,14 +122,15 @@ async def get_one[T: Model](model: type[T], filters: dict[str, Any]) -> T | None
             stmt = stmt.where(*cs)
         stmt = stmt.limit(1)
         res = await s.execute(stmt)
-        return res.scalar_one_or_none()
+        obj = res.scalar_one_or_none()
+        return obj, obj is not None
 
 
 async def get_or_create[T: Model](
     model: type[T],
     defaults: dict[str, Any] | None = None,
     **filters: Any,
-) -> tuple[T, bool]:
+) -> tuple[T | None, bool, bool]:
     """
     获取或创建一条记录。
     若存在则返回，不存在则新建。
@@ -129,7 +139,8 @@ async def get_or_create[T: Model](
         defaults: 默认字段值
         **filters: 查找条件
     返回：
-        (对象, 是否新建)
+        (对象, 是否新建, 状态)
+        状态为 True 表示操作成功，False 表示异常。
     """
     async with get_session() as s:
         cs = _conds(model, filters)
@@ -140,7 +151,7 @@ async def get_or_create[T: Model](
         res = await s.execute(stmt)
         obj = res.scalar_one_or_none()
         if obj is not None:
-            return obj, False
+            return obj, False, True
 
         data = dict(filters)
         if defaults:
@@ -155,20 +166,20 @@ async def get_or_create[T: Model](
             res2 = await s.execute(stmt)
             obj2 = res2.scalar_one_or_none()
             if obj2 is None:
-                raise
-            return obj2, False
+                return None, False, False
+            return obj2, False, True
         except SQLAlchemyError:
             await s.rollback()
-            raise
+            return None, False, False
         else:
-            return obj, True
+            return obj, True, True
 
 
 async def update_or_create[T: Model](
     model: type[T],
     filters: dict[str, Any],
     defaults: dict[str, Any] | None = None,
-) -> tuple[T, bool]:
+) -> tuple[T | None, bool, bool]:
     """
     更新或创建一条记录。
     若存在则更新，不存在则创建。
@@ -177,7 +188,8 @@ async def update_or_create[T: Model](
         filters: 查找条件
         defaults: 默认字段值
     返回：
-        (对象, 是否新建)
+        (对象, 是否新建, 状态)
+        状态为 True 表示操作成功，False 表示异常。
     """
     async with get_session() as s:
         cs = _conds(model, filters)
@@ -200,8 +212,10 @@ async def update_or_create[T: Model](
                     await s.refresh(obj)
                 except SQLAlchemyError:
                     await s.rollback()
-                    raise
-            return obj, False
+                    return obj, False, False
+                else:
+                    return obj, False, True
+            return obj, False, True
         data = dict(filters)
         if defaults:
             data.update(defaults)
@@ -212,15 +226,16 @@ async def update_or_create[T: Model](
             await s.refresh(obj)
         except SQLAlchemyError:
             await s.rollback()
-            raise
-        return obj, True
+            return None, False, False
+        else:
+            return obj, True, True
 
 
 async def update[T: Model](
     model: type[T],
     filters: dict[str, Any],
     values: dict[str, Any],
-) -> int:
+) -> tuple[int, bool]:
     """
     更新符合条件的记录。
     参数：
@@ -228,12 +243,13 @@ async def update[T: Model](
         filters: 筛选条件
         values: 要更新的字段及其值
     返回：
-        受影响的行数
+        (受影响的行数, 状态)
+        状态为 True 表示成功，False 表示失败。
     """
     async with get_session() as s:
         update_values = {k: v for k, v in values.items() if getattr(model, k, None)}
         if not update_values:
-            return 0
+            return 0, False
 
         stmt = sqlalchemy_update(model)
         cs = _conds(model, filters)
@@ -244,21 +260,23 @@ async def update[T: Model](
         try:
             result = cast("CursorResult[Any]", await s.execute(stmt))
             await s.commit()
-            rowcount = result.rowcount
-            return int(rowcount) if rowcount is not None else 0
         except SQLAlchemyError:
             await s.rollback()
-            raise
+            return 0, False
+        else:
+            rowcount = result.rowcount
+            return (int(rowcount) if rowcount is not None else 0), True
 
 
-async def delete[T: Model](model: type[T], filters: dict[str, Any]) -> int:
+async def delete[T: Model](model: type[T], filters: dict[str, Any]) -> tuple[int, bool]:
     """
     删除符合条件的记录。
     参数：
         model: ORM模型类
         filters: 筛选条件
     返回：
-        删除的行数
+        (删除的行数, 状态)
+        状态为 True 表示成功，False 表示失败。
     """
     async with get_session() as s:
         stmt = sqlalchemy_delete(model)
@@ -269,36 +287,45 @@ async def delete[T: Model](model: type[T], filters: dict[str, Any]) -> int:
         try:
             result = cast("CursorResult[Any]", await s.execute(stmt))
             await s.commit()
-            rowcount = result.rowcount
-            return int(rowcount) if rowcount is not None else 0
         except SQLAlchemyError:
             await s.rollback()
-            raise
+            return 0, False
+        else:
+            rowcount = result.rowcount
+            return (int(rowcount) if rowcount is not None else 0), True
 
 
-async def exists[T: Model](model: type[T], filters: dict[str, Any]) -> bool:
+async def exists[T: Model](
+    model: type[T], filters: dict[str, Any]
+) -> tuple[bool, bool]:
     """
     判断是否存在符合条件的记录。
     参数：
         model: ORM模型类
         filters: 筛选条件
     返回：
-        存在返回True，否则False
+        (是否存在, 状态)
+        状态为 True 表示查询成功，False 表示异常。
     """
     async with get_session() as s:
-        stmt = select(1).select_from(model)
-        cs = _conds(model, filters)
-        if cs:
-            stmt = stmt.where(*cs)
-        stmt = stmt.limit(1)
-        res = await s.execute(stmt)
-        return res.scalar_one_or_none() is not None
+        try:
+            stmt = select(1).select_from(model)
+            cs = _conds(model, filters)
+            if cs:
+                stmt = stmt.where(*cs)
+            stmt = stmt.limit(1)
+            res = await s.execute(stmt)
+            found = res.scalar_one_or_none() is not None
+        except SQLAlchemyError:
+            return False, False
+        else:
+            return found, True
 
 
 # 批量操作
 async def bulk_create[T: Model](
     model: type[T], objs: list[dict[str, Any]], *, commit: bool = True
-) -> list[T]:
+) -> tuple[list[T], bool]:
     """
     批量创建多条记录。
     参数：
@@ -306,7 +333,8 @@ async def bulk_create[T: Model](
         objs: 字段字典列表
         commit: 是否立即提交事务
     返回：
-        新创建的模型对象列表
+        (新创建的模型对象列表, 状态)
+        状态为 True 表示成功，False 表示失败。
     """
     async with get_session() as s:
         instances = [model(**fields) for fields in objs]
@@ -318,8 +346,10 @@ async def bulk_create[T: Model](
                     await s.refresh(obj)
             except SQLAlchemyError:
                 await s.rollback()
-                raise
-        return instances
+                return [], False
+            else:
+                return instances, True
+        return instances, True
 
 
 async def list_items[T: Model](
@@ -328,7 +358,7 @@ async def list_items[T: Model](
     order_by: Sequence[str] | None = None,
     offset: int = 0,
     limit: int = 100,
-) -> list[T]:
+) -> tuple[list[T], bool]:
     """
     获取符合条件的多条记录列表。
     参数：
@@ -338,37 +368,49 @@ async def list_items[T: Model](
         offset: 偏移量
         limit: 限制条数
     返回：
-        查询到的模型对象列表
+        (模型对象列表, 状态)
+        状态为 True 表示成功，False 表示失败。
     """
     async with get_session() as s:
-        stmt = select(model)
-        cs = _conds(model, filters)
-        if cs:
-            stmt = stmt.where(*cs)
-        os = _orders(model, order_by)
-        if os:
-            stmt = stmt.order_by(*os)
-        if offset:
-            stmt = stmt.offset(offset)
-        if limit:
-            stmt = stmt.limit(limit)
-        res = await s.execute(stmt)
-        return list(res.scalars().all())
+        try:
+            stmt = select(model)
+            cs = _conds(model, filters)
+            if cs:
+                stmt = stmt.where(*cs)
+            os = _orders(model, order_by)
+            if os:
+                stmt = stmt.order_by(*os)
+            if offset:
+                stmt = stmt.offset(offset)
+            if limit:
+                stmt = stmt.limit(limit)
+            res = await s.execute(stmt)
+            items = list(res.scalars().all())
+        except SQLAlchemyError:
+            return [], False
+        else:
+            return items, True
 
 
-async def count[T: Model](model: type[T], filters: dict[str, Any] | None = None) -> int:
+async def count[T: Model](
+    model: type[T], filters: dict[str, Any] | None = None
+) -> tuple[int, bool]:
     """
     统计符合条件的记录数量。
     参数：
         model: ORM模型类
         filters: 字段名到值的映射
     返回：
-        记录数
+        (记录数, 状态)
+        状态为 True 表示成功，False 表示失败。
     """
     async with get_session() as s:
-        stmt = select(func.count()).select_from(model)
-        cs = _conds(model, filters)
-        if cs:
-            stmt = stmt.where(*cs)
-        res = await s.execute(stmt)
-        return int(res.scalar_one())
+        try:
+            stmt = select(func.count()).select_from(model)
+            cs = _conds(model, filters)
+            if cs:
+                stmt = stmt.where(*cs)
+            res = await s.execute(stmt)
+            return int(res.scalar_one()), True
+        except SQLAlchemyError:
+            return 0, False
