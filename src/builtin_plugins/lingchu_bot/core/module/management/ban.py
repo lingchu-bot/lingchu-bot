@@ -35,7 +35,7 @@ async def handle_mute(bot: Bot, event: GroupMessageEvent) -> None:
         await UniMessage.text("权限不足，仅群主和管理员可用").send(reply_to=True)
         return
 
-    if not await check_feat_status():
+    if not await check_feat_status(event.self_id):
         await UniMessage.text("禁言功能未开启").send(reply_to=True)
         return
 
@@ -46,16 +46,16 @@ async def handle_mute(bot: Bot, event: GroupMessageEvent) -> None:
         f"来自用户: {event.user_id} 目标用户: {target_user} "
         f"时间：{mute_time} 在群: {event.group_id}"
     )
-    if await bot.set_group_ban(
+    await bot.set_group_ban(
         group_id=event.group_id, user_id=target_user, duration=mute_time
-    ):
-        await UniMessage.text("禁言成功").send(reply_to=True)
+    )
+    await UniMessage.text("禁言成功").send(reply_to=True)
 
 
 @whole_ban_cmd.handle()
 async def handle_whole_mute(bot: Bot, event: GroupMessageEvent) -> None:
-    if await bot.set_group_whole_ban(group_id=event.group_id, enable=True):
-        await UniMessage.text("全体禁言成功").send(reply_to=True)
+    await bot.set_group_whole_ban(group_id=event.group_id, enable=True)
+    await UniMessage.text("全体禁言成功").send(reply_to=True)
 
 
 @unban_cmd.handle()
@@ -80,16 +80,14 @@ async def handle_unmute(bot: Bot, event: GroupMessageEvent) -> None:
         f"{event.self_id}收到解禁指令: {event.raw_message} "
         f"来自用户: {event.user_id} 目标用户: {target_user} 在群: {event.group_id}"
     )
-    if await bot.set_group_ban(
-        group_id=event.group_id, user_id=target_user, duration=0
-    ):
-        await UniMessage.text("解禁成功").send(reply_to=True)
+    await bot.set_group_ban(group_id=event.group_id, user_id=target_user, duration=0)
+    await UniMessage.text("解禁成功").send(reply_to=True)
 
 
 @whole_unban_cmd.handle()
 async def handle_whole_unmute(bot: Bot, event: GroupMessageEvent) -> None:
-    if await bot.set_group_whole_ban(group_id=event.group_id, enable=False):
-        await UniMessage.text("全体解禁成功").send(reply_to=True)
+    await bot.set_group_whole_ban(group_id=event.group_id, enable=False)
+    await UniMessage.text("全体解禁成功").send(reply_to=True)
 
 
 # from nonebot_plugin_alconna import on_alconna

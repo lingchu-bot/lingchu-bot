@@ -16,8 +16,7 @@ def t(key: str, lang: str = "en", **kwargs: str) -> str:
     try:
         text = translations[lang][key]
     except KeyError:
-        return translations["en"].get(key, key)
-    else:
-        if kwargs:
-            return text.format(**kwargs)
-        return text
+        text = translations["en"].get(key, key)
+    if kwargs:
+        return text.format(**kwargs)
+    return text

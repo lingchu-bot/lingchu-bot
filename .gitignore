@@ -80,7 +80,7 @@ docs/_build/
 doc/_build/
 
 # zensical documentation
-!docs/**
+!docs/**/lib/
 
 # PyBuilder
 target/
@@ -173,9 +173,11 @@ pyvenv.cfg
 !.idea/dictionaries/
 !.idea/vcs.xml
 
-# version
+# Version Control(add other all)
 
+poetry.lock
+Pipfile.lock
+pdm.lock
 uv.lock
-*.lock
 
 # End of https://www.toptal.com/developers/gitignore/api/python
