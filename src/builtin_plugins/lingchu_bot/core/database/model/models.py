@@ -13,6 +13,7 @@ class LoginInfo(Model):
     """配置信息"""
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    feat_status: Mapped[bool] = mapped_column(index=True, default=False)
     login_id: Mapped[int] = mapped_column(unique=True, index=True)
     login_name: Mapped[str] = mapped_column(index=True)
     login_status: Mapped[bool] = mapped_column(index=True, default=False)

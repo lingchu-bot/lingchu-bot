@@ -366,7 +366,12 @@ async def list_models() -> ModelsResponse:
 async def health_check() -> HealthResponse:
     """数据库连接健康检查（轻量）。"""
     try:
-        await client.count(UiConfig, filters=None)
+        _, status = await client.count(UiConfig, filters=None)
+        if not status:
+            raise HTTPException(
+                status_code=500,
+                detail={"error": "database_unavailable", "msg": "数据库不可用"},
+            )
     except SQLAlchemyError as e:
         raise HTTPException(
             status_code=500,
@@ -407,7 +412,12 @@ async def api_create(
     model = _get_model(model_name)
     fields = _clean_fields_strict(model, payload.data, where="data")
     try:
-        obj = await client.create(model, **fields)
+        obj, status = await client.create(model, **fields)
+        if not status or obj is None:
+            raise HTTPException(
+                status_code=500,
+                detail={"error": "database_error", "msg": "创建失败"},
+            )
     except IntegrityError as e:
         error_msg = str(getattr(e, "orig", None) or "数据完整性约束冲突")
         raise HTTPException(
@@ -453,11 +463,11 @@ async def api_get_one(
     """按条件查询单条记录（最多返回 1 条）。"""
     model = _get_model(model_name)
     _validate_filters(model, payload.filters)
-    obj = await client.get_one(model, payload.filters)
+    obj, status = await client.get_one(model, payload.filters)
     return RecordResponse(
-        status="success",
+        status="success" if status else "error",
         data=None if obj is None else _to_dict(obj),
-        message="ok",
+        message="ok" if status else "not found",
     )
 
 
@@ -489,7 +499,7 @@ async def api_list(
     payload = payload or ListReq()
     _validate_filters_optional(model, payload.filters)
     payload.order_by = _validate_order_by(model, payload.order_by)
-    items = await client.list_items(
+    items, status = await client.list_items(
         model,
         filters=payload.filters,
         order_by=payload.order_by,
@@ -497,9 +507,9 @@ async def api_list(
         limit=payload.limit,
     )
     return RecordListResponse(
-        status="success",
+        status="success" if status else "error",
         data=[_to_dict(x) for x in items],
-        message="ok",
+        message="ok" if status else "query failed",
     )
 
 
@@ -527,8 +537,12 @@ async def api_count(
     model = _get_model(model_name)
     payload = payload or ListReq()
     _validate_filters_optional(model, payload.filters)
-    total = await client.count(model, filters=payload.filters)
-    return CountResponse(status="success", data=total, message="ok")
+    total, status = await client.count(model, filters=payload.filters)
+    return CountResponse(
+        status="success" if status else "error",
+        data=total,
+        message="ok" if status else "count failed",
+    )
 
 
 @app.post(
@@ -560,7 +574,12 @@ async def api_update(
     _validate_filters(model, payload.filters)
     values = _clean_fields_strict(model, payload.values, where="values")
     try:
-        updated = await client.update(model, payload.filters, values)
+        updated, status = await client.update(model, payload.filters, values)
+        if not status:
+            raise HTTPException(
+                status_code=500,
+                detail={"error": "database_error", "msg": "更新失败"},
+            )
     except IntegrityError as e:
         error_msg = str(getattr(e, "orig", None) or "数据完整性约束冲突")
         raise HTTPException(
@@ -606,7 +625,12 @@ async def api_delete(
     model = _get_model(model_name)
     _validate_filters(model, payload.filters)
     try:
-        deleted = await client.delete(model, payload.filters)
+        deleted, status = await client.delete(model, payload.filters)
+        if not status:
+            raise HTTPException(
+                status_code=500,
+                detail={"error": "database_error", "msg": "删除失败"},
+            )
     except SQLAlchemyError as e:
         msg = "数据库操作失败"
         if isinstance(e, OperationalError):
