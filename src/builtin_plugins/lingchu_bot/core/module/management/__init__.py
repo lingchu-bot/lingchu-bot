@@ -1,3 +1,3 @@
-from . import mute
+from . import ban
 
-__all__ = ["mute"]
+__all__ = ["ban"]
