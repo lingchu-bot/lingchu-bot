@@ -30,6 +30,9 @@ def index_init() -> None:
         case True:
             logger.info("使用用户配置启动")
             try:
+                logger.debug("开始载入系统模块")
+                from .module import system as system
+
                 logger.debug("开始载入管理模块")
                 from .module import management as management
             except Exception as e:  # noqa: BLE001
