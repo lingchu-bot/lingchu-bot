@@ -1,3 +1,3 @@
-from . import ban
+from . import ban, kick
 
-__all__ = ["ban"]
+__all__ = ["ban", "kick"]
