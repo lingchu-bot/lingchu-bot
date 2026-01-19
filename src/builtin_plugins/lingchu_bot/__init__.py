@@ -27,5 +27,10 @@ sub_plugins = nonebot.load_plugins(
 )
 
 
-# 公共接口
+## 公共接口
+
+# API挂载点
 from .core.api import apimount as apimount
+
+# 自我消息事件
+from .core.module.system.send import MessageSentEvent as MessageSentEvent
