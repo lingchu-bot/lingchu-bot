@@ -6,7 +6,7 @@ def check_init_status() -> bool | None:
     # TODO: 检查逻辑
     try:
         logger.debug("开始载入初始化模块")
-        from .module.initial import sync as sync
+        from .module import initial as initial
     except Exception as e:  # noqa: BLE001
         logger.error(f"载入初始化模块失败: {e}")
         return None
