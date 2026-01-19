@@ -8,9 +8,9 @@ from nonebot.message import event_postprocessor
 async def handle_send(event: Event) -> None:
     """msg事件后处理"""
     match event.post_type:
-        case "message_sent" if event.self_id == event.get_user_id():
-            logger.debug(f"后处理自我消息: {event}\n{event.self_id}")
-        case "message" if event.self_id != event.get_user_id():
-            logger.debug(f"后处理用户消息: {event}\n{event.get_user_id()}")
+        case "message_sent":
+            logger.debug(f"后处理自我消息: {event}")
+        case "message":
+            logger.debug(f"后处理用户消息: {event}")
         case _:
             pass
