@@ -53,16 +53,28 @@ async def check_role_permission(
     event_role = str(_get_event_role(event))
     event_level = _get_role_level(event_role)
     target_roles = {str(r) for r in _normalize_roles(role)}
+
+    is_super = _is_super_user(user_id, super_users)
+    result = False
+
     if "super" in target_roles:
-        return _is_super_user(user_id, super_users)
-    if len(target_roles) > 1:
-        return event_role in target_roles
-    target = next(iter(target_roles))
-    if target == "super":
-        return _is_super_user(user_id, super_users)
-    if target not in {"member", "admin", "owner"}:
-        return False
-    target_level = _get_role_level(target)
-    if inherit:
-        return _is_super_user(user_id, super_users) or event_level >= target_level
-    return event_role == target
+        if len(target_roles) > 1:
+            result = is_super or event_role in target_roles
+        else:
+            result = is_super
+    elif len(target_roles) > 1:
+        result = event_role in target_roles
+    else:
+        target = next(iter(target_roles))
+        if target == "super":
+            result = is_super
+        elif target in {"member", "admin", "owner"}:
+            target_level = _get_role_level(target)
+            if inherit:
+                result = is_super or event_level >= target_level
+            else:
+                result = event_role == target
+        else:
+            result = False
+
+    return result

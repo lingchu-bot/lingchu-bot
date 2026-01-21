@@ -1,5 +1,6 @@
 from nonebot import logger, on_startswith
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
+from nonebot.adapters.onebot.v11.exception import ActionFailed
 from nonebot_plugin_alconna.uniseg import UniMessage
 
 from ...utils.check import check_role_permission
@@ -47,7 +48,7 @@ async def handle_mute(bot: Bot, event: GroupMessageEvent) -> None:
                 group_id=event.group_id, user_id=int(uid), duration=mute_time
             )
             success.append(get_display(uid, event.raw_message))
-        except (ValueError, TypeError, RuntimeError) as e:
+        except ActionFailed as e:
             logger.error(f"禁言用户{uid}失败: {e}")
             failed.append(get_display(uid, event.raw_message))
     msg = []
@@ -67,8 +68,12 @@ async def handle_whole_mute(bot: Bot, event: GroupMessageEvent) -> None:
         event, {"admin", "owner", "super"}, inherit=True
     ):
         return
-    await bot.set_group_whole_ban(group_id=event.group_id, enable=True)
-    await UniMessage.text("全体禁言成功").send(reply_to=True)
+    try:
+        await bot.set_group_whole_ban(group_id=event.group_id, enable=True)
+        await UniMessage.text("全体禁言成功").send(reply_to=True)
+    except ActionFailed as e:
+        logger.error(f"全体禁言失败: {e}")
+        await UniMessage.text("全体禁言失败").send(reply_to=True)
 
 
 @unban_cmd.handle()
@@ -98,7 +103,7 @@ async def handle_unmute(bot: Bot, event: GroupMessageEvent) -> None:
                 group_id=event.group_id, user_id=int(uid), duration=0
             )
             success.append(get_display(uid, event.raw_message))
-        except (ValueError, TypeError, RuntimeError) as e:
+        except ActionFailed as e:
             logger.error(f"解禁用户{uid}失败: {e}")
             failed.append(get_display(uid, event.raw_message))
     msg = []
@@ -118,8 +123,9 @@ async def handle_whole_unmute(bot: Bot, event: GroupMessageEvent) -> None:
         event, {"admin", "owner", "super"}, inherit=True
     ):
         return
-    await bot.set_group_whole_ban(group_id=event.group_id, enable=False)
-    await UniMessage.text("全体解禁成功").send(reply_to=True)
-
-
-# from nonebot_plugin_alconna import on_alconna
+    try:
+        await bot.set_group_whole_ban(group_id=event.group_id, enable=False)
+        await UniMessage.text("全体解禁成功").send(reply_to=True)
+    except ActionFailed as e:
+        logger.error(f"全体解禁失败: {e}")
+        await UniMessage.text("全体解禁失败").send(reply_to=True)

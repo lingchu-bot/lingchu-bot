@@ -26,7 +26,7 @@ def get_display(uid: str, raw_message: str) -> str:
     优先返回@name，无name则返回qq号
     """
     # 兼容 [CQ:at,qq=xxx,name=xxx] 和 [at:qq=xxx,name=xxx]
-    pattern = rf"\[(?:CQ:)?at,qq={uid}(?:,name=([^\\]]+))?\\]"
+    pattern = rf"\[(?:CQ:)?at,qq={uid}(?:,name=([^\]]+))?\]"
     match = re.search(pattern, raw_message)
     if match and match.group(1):
         return f"@{match.group(1)}"

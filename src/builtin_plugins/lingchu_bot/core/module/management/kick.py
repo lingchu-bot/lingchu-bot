@@ -1,5 +1,6 @@
 from nonebot import logger, on_startswith
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
+from nonebot.adapters.onebot.v11.exception import ActionFailed
 from nonebot_plugin_alconna.uniseg import UniMessage
 
 from ...utils.check import check_role_permission
@@ -30,6 +31,9 @@ async def handle_kick(bot: Bot, event: GroupMessageEvent) -> None:
     if not await check_role_permission(
         event, {"admin", "owner", "super"}, inherit=True
     ):
+        await UniMessage.text("权限不足，仅管理员及以上可执行此操作").send(
+            reply_to=True
+        )
         return
     success = []
     failed = []
@@ -43,7 +47,7 @@ async def handle_kick(bot: Bot, event: GroupMessageEvent) -> None:
                 group_id=event.group_id, user_id=int(uid), reject_add_request=False
             )
             success.append(get_display(uid, event.raw_message))
-        except (ValueError, TypeError, RuntimeError) as e:
+        except ActionFailed as e:
             logger.error(f"踢出用户{uid}失败: {e}")
             failed.append(get_display(uid, event.raw_message))
     msg = []

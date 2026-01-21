@@ -1,5 +1,6 @@
 from nonebot import logger, on_startswith
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
+from nonebot.adapters.onebot.v11.exception import ActionFailed
 from nonebot_plugin_alconna.uniseg import UniMessage
 
 from ...utils.check import check_role_permission
@@ -42,7 +43,7 @@ async def handle_add_admin(bot: Bot, event: GroupMessageEvent) -> None:
                 group_id=event.group_id, user_id=int(uid), enable=True
             )
             msg.append(f"设置管理员成功: {get_display(uid, event.raw_message)}")
-        except Exception as e:  # noqa: BLE001
+        except ActionFailed as e:
             logger.error(f"设置管理员{uid}失败: {e}")
             msg.append(f"设置管理员失败: {get_display(uid, event.raw_message)}")
     await UniMessage.text("\n".join(msg) if msg else "无用户被设置管理员").send(
@@ -79,7 +80,7 @@ async def handle_remove_admin(bot: Bot, event: GroupMessageEvent) -> None:
                 group_id=event.group_id, user_id=int(uid), enable=False
             )
             msg.append(f"取消管理员成功: {get_display(uid, event.raw_message)}")
-        except Exception as e:  # noqa: BLE001
+        except ActionFailed as e:
             logger.error(f"取消管理员{uid}失败: {e}")
             msg.append(f"取消管理员失败: {get_display(uid, event.raw_message)}")
     await UniMessage.text("\n".join(msg) if msg else "无用户被取消管理员").send(

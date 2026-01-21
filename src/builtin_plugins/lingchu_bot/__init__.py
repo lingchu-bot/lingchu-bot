@@ -33,4 +33,4 @@ sub_plugins = nonebot.load_plugins(
 from .core.api import apimount as apimount
 
 # 自我消息事件
-from .core.module.system.send import MessageSentEvent as MessageSentEvent
+from .core.middleware.public import MessageSentEvent as MessageSentEvent

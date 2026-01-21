@@ -1,3 +1,4 @@
+import asyncio
 import platform
 
 import psutil
@@ -43,10 +44,10 @@ async def handle_system_status(event: GroupMessageEvent) -> None:
         f"{event.self_id}收到获取机器信息指令: {event.raw_message} "
         f"来自用户: {event.user_id}在群: {event.group_id}"
     )
-    cpu_percent = psutil.cpu_percent(interval=1)
-    mem = psutil.virtual_memory()
-    disk = psutil.disk_usage("/")
-    boot_time = psutil.boot_time()
+    cpu_percent = await asyncio.to_thread(psutil.cpu_percent, 1)
+    mem = await asyncio.to_thread(psutil.virtual_memory)
+    disk = await asyncio.to_thread(psutil.disk_usage, "/")
+    boot_time = await asyncio.to_thread(psutil.boot_time)
     import datetime
 
     boot_time_str = datetime.datetime.fromtimestamp(
