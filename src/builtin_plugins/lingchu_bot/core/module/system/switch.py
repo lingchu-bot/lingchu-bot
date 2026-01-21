@@ -6,8 +6,8 @@ from ...database import client
 from ...database.model import models
 from ...utils.auth import check_permission_and_status
 
-feat_status_cmd = on_startswith("开机", priority=5, block=True)
-unfeat_status_cmd = on_startswith("关机", priority=5, block=True)
+feat_status_cmd = on_startswith("开机", priority=1, block=True)
+unfeat_status_cmd = on_startswith("关机", priority=1, block=True)
 
 
 @feat_status_cmd.handle()
