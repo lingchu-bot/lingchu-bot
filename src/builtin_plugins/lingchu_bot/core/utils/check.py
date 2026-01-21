@@ -10,16 +10,11 @@ async def check_feat_status(login_id: int) -> bool:
     obj, status = await client.get_one(
         model=models.LoginInfo, filters={"login_id": login_id}
     )
-    if not status or obj is None:
-        return False
-    return getattr(obj, "feat_status", False) is True
+    return status and obj is not None and getattr(obj, "feat_status", False)
 
 
 # =============================================================================
-import nonebot
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
-
-config = nonebot.get_driver().config
 
 
 def _is_super_user(user_id: str, super_users: set[str]) -> bool:
@@ -48,15 +43,15 @@ async def check_role_permission(
     role: 目标角色(str)或角色组(set[str])，可为 'super', 'owner', 'admin', 'member'
     inherit: 是否允许权限继承（更高权限可通过，组匹配时无继承）
     """
-    super_users: set[str] = config.superusers
-    user_id: str = str(event.user_id)
-    event_role = str(_get_event_role(event))
-    event_level = _get_role_level(event_role)
+    import nonebot
+
     target_roles = {str(r) for r in _normalize_roles(role)}
+    is_super = _is_super_user(
+        str(event.user_id), nonebot.get_driver().config.superusers
+    )
+    event_role = str(_get_event_role(event))
 
-    is_super = _is_super_user(user_id, super_users)
     result = False
-
     if "super" in target_roles:
         if len(target_roles) > 1:
             result = is_super or event_role in target_roles
@@ -69,12 +64,12 @@ async def check_role_permission(
         if target == "super":
             result = is_super
         elif target in {"member", "admin", "owner"}:
-            target_level = _get_role_level(target)
             if inherit:
-                result = is_super or event_level >= target_level
+                result = is_super or _get_role_level(event_role) >= _get_role_level(
+                    target
+                )
             else:
                 result = event_role == target
         else:
             result = False
-
     return result

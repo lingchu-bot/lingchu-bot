@@ -34,6 +34,9 @@ async def handle_mute(bot: Bot, event: GroupMessageEvent) -> None:
     if not await check_role_permission(
         event, {"admin", "owner", "super"}, inherit=True
     ):
+        await UniMessage.text("权限不足，仅管理员及以上可执行此操作").send(
+            reply_to=True
+        )
         return
     success = []
     failed = []
@@ -90,6 +93,9 @@ async def handle_unmute(bot: Bot, event: GroupMessageEvent) -> None:
     if not await check_role_permission(
         event, {"admin", "owner", "super"}, inherit=True
     ):
+        await UniMessage.text("权限不足，仅管理员及以上可执行此操作").send(
+            reply_to=True
+        )
         return
     success = []
     failed = []
@@ -122,6 +128,9 @@ async def handle_whole_unmute(bot: Bot, event: GroupMessageEvent) -> None:
     if not await check_role_permission(
         event, {"admin", "owner", "super"}, inherit=True
     ):
+        await UniMessage.text("权限不足，仅管理员及以上可执行此操作").send(
+            reply_to=True
+        )
         return
     try:
         await bot.set_group_whole_ban(group_id=event.group_id, enable=False)

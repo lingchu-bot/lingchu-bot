@@ -80,6 +80,7 @@ async def handle_revoke_title(bot: Bot, event: GroupMessageEvent) -> None:
     if not await check_role_permission(
         event, {"admin", "owner", "super"}, inherit=True
     ):
+        await UniMessage.text("仅管理员、群主和超管可用").send(reply_to=True)
         return
     if (
         await bot.get_group_member_info(
