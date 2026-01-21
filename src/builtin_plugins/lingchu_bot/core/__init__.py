@@ -22,6 +22,12 @@ def index_init() -> None:
 
     logger.add(
         store.get_plugin_cache_dir() / "lingchu_bot.log",
+        level="DEBUG",
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+        rotation="1 week",
+    )
+    logger.add(
+        store.get_plugin_cache_dir() / "lingchu_bot.error.log",
         level="ERROR",
         format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
         rotation="1 week",

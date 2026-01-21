@@ -6,7 +6,7 @@ from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot_plugin_alconna.uniseg import UniMessage
 
 from ....config import Config
-from ...utils.auth import check_feat_status, check_permission_and_status
+from ...utils.check import check_feat_status, check_role_permission
 
 framework_status_cmd = on_startswith(("框架状态", "框架信息"), priority=5, block=True)
 system_status_cmd = on_startswith(("机器状态", "机器信息"), priority=5, block=True)
@@ -14,8 +14,8 @@ system_status_cmd = on_startswith(("机器状态", "机器信息"), priority=5, 
 
 @framework_status_cmd.handle()
 async def handle_framework_status(event: GroupMessageEvent) -> None:
-    if not await check_permission_and_status(
-        event, mode="permission", send_reply=False
+    if not await check_role_permission(
+        event, {"admin", "owner", "super"}, inherit=True
     ):
         return
     logger.debug(
@@ -35,8 +35,8 @@ async def handle_framework_status(event: GroupMessageEvent) -> None:
 
 @system_status_cmd.handle()
 async def handle_system_status(event: GroupMessageEvent) -> None:
-    if not await check_permission_and_status(
-        event, mode="permission", send_reply=False
+    if not await check_role_permission(
+        event, {"admin", "owner", "super"}, inherit=True
     ):
         return
     logger.debug(

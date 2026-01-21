@@ -4,7 +4,7 @@ from nonebot_plugin_alconna.uniseg import UniMessage
 
 from ...database import client
 from ...database.model import models
-from ...utils.auth import check_permission_and_status
+from ...utils.check import check_role_permission
 
 feat_status_cmd = on_startswith("开机", priority=1, block=True)
 unfeat_status_cmd = on_startswith("关机", priority=1, block=True)
@@ -12,8 +12,8 @@ unfeat_status_cmd = on_startswith("关机", priority=1, block=True)
 
 @feat_status_cmd.handle()
 async def handle_feat_status(event: GroupMessageEvent) -> None:
-    if not await check_permission_and_status(
-        event, mode="permission", send_reply=False
+    if not await check_role_permission(
+        event, {"admin", "owner", "super"}, inherit=True
     ):
         return
     result = await client.update(
@@ -33,8 +33,8 @@ async def handle_feat_status(event: GroupMessageEvent) -> None:
 
 @unfeat_status_cmd.handle()
 async def handle_unfeat_status(event: GroupMessageEvent) -> None:
-    if not await check_permission_and_status(
-        event, mode="permission", send_reply=False
+    if not await check_role_permission(
+        event, {"admin", "owner", "super"}, inherit=True
     ):
         return
     result = await client.update(
