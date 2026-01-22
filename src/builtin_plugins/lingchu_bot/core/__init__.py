@@ -6,7 +6,7 @@ def check_init_status() -> bool | None:
     # TODO: 检查逻辑
     try:
         logger.debug("开始载入初始化模块")
-        from .module.initial import sync as sync
+        from .module import initial as initial
     except Exception as e:  # noqa: BLE001
         logger.error(f"载入初始化模块失败: {e}")
         return None
@@ -22,6 +22,12 @@ def index_init() -> None:
 
     logger.add(
         store.get_plugin_cache_dir() / "lingchu_bot.log",
+        level="DEBUG",
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+        rotation="1 week",
+    )
+    logger.add(
+        store.get_plugin_cache_dir() / "lingchu_bot.error.log",
         level="ERROR",
         format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
         rotation="1 week",

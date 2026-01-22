@@ -1,3 +1,3 @@
-from . import switch
+from . import info, send, switch
 
-__all__ = ["switch"]
+__all__ = ["info", "send", "switch"]
