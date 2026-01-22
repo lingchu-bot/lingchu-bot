@@ -26,11 +26,7 @@ async def send_group_notice(
             content=message,
             image=image,
         )
-    except NetworkError:
-        # 处理网络错误
-        return False
-    except ActionFailed:
-        # 处理 API 请求失败
+    except (NetworkError, ActionFailed):
         return False
     return True
 
@@ -46,18 +42,12 @@ async def get_group_shut_list(bot: Bot, group_id: int) -> list[dict[str, Any]] |
         成功返回被禁言成员信息列表，失败返回 None
     """
     try:
-        resp = await bot.call_api(
+        return await bot.call_api(
             api="get_group_shut_list",
             group_id=group_id,
         )
-        # 兼容返回结构
-        if resp and resp.get("status") == "ok" and "data" in resp:
-            return resp["data"]
-    except NetworkError:
+    except (NetworkError, ActionFailed):
         return None
-    except ActionFailed:
-        return None
-    return None
 
 
 async def batch_kick_group_members(
@@ -77,10 +67,6 @@ async def batch_kick_group_members(
             group_id=group_id,
             user_ids=user_ids,
         )
-    except NetworkError:
-        # 处理网络错误
-        return False
-    except ActionFailed:
-        # 处理 API 请求失败
+    except (NetworkError, ActionFailed):
         return False
     return True

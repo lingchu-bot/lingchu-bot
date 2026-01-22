@@ -82,7 +82,7 @@ async def handle_remove_admin(bot: Bot, event: GroupMessageEvent) -> None:
         await UniMessage.text("获取机器人群身份失败，请稍后再试").send(reply_to=True)
         return
     if info["role"] != "owner":
-        await UniMessage.text("机器人不是群主，无法设置管理员！").send(reply_to=True)
+        await UniMessage.text("机器人不是群主，无法取消管理员！").send(reply_to=True)
         return
     user_ids = parse_ids_by_cmd(event.raw_message, ["取消管理员"])
     if not user_ids:
