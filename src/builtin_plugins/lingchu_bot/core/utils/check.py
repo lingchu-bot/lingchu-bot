@@ -46,6 +46,8 @@ async def check_role_permission(
     import nonebot
 
     target_roles = {str(r) for r in _normalize_roles(role)}
+    if not target_roles:
+        return False
     is_super = _is_super_user(
         str(event.user_id), nonebot.get_driver().config.superusers
     )

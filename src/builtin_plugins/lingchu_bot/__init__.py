@@ -11,9 +11,10 @@ __plugin_meta__ = PluginMetadata(
     description="lingchu-bot核心插件",
     usage="",
     type="application",
-    supported_adapters={"nonebot.adapters.onebot.v11"},
     homepage="https://github.com/lingchu-bot/lingchu-bot",
     config=Config,
+    supported_adapters={"nonebot.adapters.onebot.v11"},
+    extra={},
 )
 
 config = get_plugin_config(Config)
@@ -33,4 +34,4 @@ sub_plugins = nonebot.load_plugins(
 from .core.api import apimount as apimount
 
 # 自我消息事件
-from .core.middleware.public import MessageSentEvent as MessageSentEvent
+from .core.middleware.LLbot.event import MessageSentEvent as MessageSentEvent

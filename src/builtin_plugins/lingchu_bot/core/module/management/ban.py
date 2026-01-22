@@ -1,5 +1,5 @@
 from nonebot import logger, on_startswith
-from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
+from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, MessageSegment
 from nonebot.adapters.onebot.v11.exception import ActionFailed
 from nonebot_plugin_alconna.uniseg import UniMessage
 
@@ -20,10 +20,13 @@ whole_unban_cmd = on_startswith("全体解禁", priority=5, block=True)
 
 # ================= 事件处理 =================
 @ban_cmd.handle()
-async def handle_mute(bot: Bot, event: GroupMessageEvent) -> None:
+async def handle_mute(
+    bot: Bot, event: GroupMessageEvent, msg_seg: MessageSegment
+) -> None:
     """
     处理禁言命令，支持多用户和单用户
     """
+    msg_seg.at(event.user_id)
     user_ids, mute_time = parse_ids_and_time(event.raw_message, ["禁言"])
     if not user_ids or mute_time is None:
         await UniMessage.text(
@@ -70,6 +73,9 @@ async def handle_whole_mute(bot: Bot, event: GroupMessageEvent) -> None:
     if not await check_role_permission(
         event, {"admin", "owner", "super"}, inherit=True
     ):
+        await UniMessage.text("权限不足，仅管理员及以上可执行此操作").send(
+            reply_to=True
+        )
         return
     try:
         await bot.set_group_whole_ban(group_id=event.group_id, enable=True)

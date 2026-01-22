@@ -1,3 +1,3 @@
-from . import public
+from .LLbot import event
 
-__all__ = ["public"]
+__all__ = ["event"]

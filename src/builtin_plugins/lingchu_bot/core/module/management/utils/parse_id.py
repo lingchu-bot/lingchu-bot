@@ -1,3 +1,21 @@
+def parse_cmd_and_args(
+    raw_message: str, cmd_keywords: list[str]
+) -> tuple[str | None, str]:
+    """
+    解析命令关键词及其后所有内容。
+    返回匹配到的命令关键词和其后所有内容（去除前后空白）。
+    例如：
+        parse_cmd_and_args("禁言123456 60", ["禁言"]) -> ("禁言", "123456 60")
+    """
+    cmd_pattern = "|".join(cmd_keywords)
+    match = re.match(rf"({cmd_pattern})(.*)", raw_message)
+    if match:
+        cmd = match.group(1)
+        args = match.group(2).strip()
+        return cmd, args
+    return None, ""
+
+
 import re
 
 
@@ -45,18 +63,13 @@ def parse_ids_and_time(
     2. 命令123456 654321 60
     cmd_keywords: ["禁言", ...]
     """
-    cmd_pattern = "|".join(cmd_keywords)
-    # 兼容 [CQ:at,qq=xxx] 和 [at:qq=xxx]
-    pattern_at = (
-        rf"(?:{cmd_pattern})((?:\[(?:CQ:)?at,qq=\d+(?:,name=[^\]]+)?\]\s?)+)\s*(\d+)"
-    )
-    pattern_plain = rf"(?:{cmd_pattern})\s*((?:\d+\s?)+)\s*(\d+)"
-    match = re.search(pattern_at, raw_message)
+    _, args = parse_cmd_and_args(raw_message, cmd_keywords)
+    match = re.match(r"((?:\[(?:CQ:)?at,qq=\d+(?:,name=[^\]]+)?\]\s?)+)\s*(\d+)", args)
     if match:
         at_block = match.group(1).strip()
         mute_time = int(match.group(2))
         return re.findall(r"\[(?:CQ:)?at,qq=(\d+)", at_block), mute_time
-    match = re.search(pattern_plain, raw_message)
+    match = re.match(r"((?:\d+\s?)+)\s*(\d+)", args)
     if match:
         ids_block = match.group(1).strip()
         mute_time = int(match.group(2))
