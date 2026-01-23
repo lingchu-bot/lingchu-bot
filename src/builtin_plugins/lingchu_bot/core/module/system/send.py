@@ -1,7 +1,7 @@
 from nonebot import logger
 from nonebot.message import run_postprocessor
 
-from ...middleware.LLbot.event import MessageSentEvent
+from ...middleware.onebot11.event import MessageSentEvent
 
 
 # TODO: 实现发送事件的后处理器

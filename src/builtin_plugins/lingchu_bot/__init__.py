@@ -34,4 +34,4 @@ sub_plugins = nonebot.load_plugins(
 from .core.api import apimount as apimount
 
 # 自我消息事件
-from .core.middleware.LLbot.event import MessageSentEvent as MessageSentEvent
+from .core.middleware.onebot11.event import MessageSentEvent as MessageSentEvent
