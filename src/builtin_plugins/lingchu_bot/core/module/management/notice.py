@@ -7,4 +7,4 @@
 # from .utils.parse_id import parse_cmd_and_args
 
 # # ========== 指令注册 ==========
-# add_title_cmd = on_startswith("发布公告", priority=5, block=True)
+# notice_cmd = on_startswith("发布公告", priority=5, block=True)
