@@ -24,14 +24,12 @@ async def handle_framework_status(event: GroupMessageEvent) -> None:
         f"来自用户: {event.user_id}在群: {event.group_id}"
     )
     status = await check_feat_status(event.self_id)
-    if status:
-        await UniMessage.text(
-            f"====框架信息====\n\n状态：已启用\n版本：{get_plugin_config(Config).version}"
-        ).send()
-    else:
-        await UniMessage.text(
-            f"====框架信息====\n\n状态：已禁用\n版本：{get_plugin_config(Config).version}"
-        ).send()
+    msg = (
+        f"====框架信息====\n\n"
+        f"状态：{'已启用' if status else '已禁用'}\n"
+        f"版本：{get_plugin_config(Config).version}"
+    )
+    await UniMessage.text(msg).send()
 
 
 @system_status_cmd.handle()
@@ -44,16 +42,17 @@ async def handle_system_status(event: GroupMessageEvent) -> None:
         f"{event.self_id}收到获取机器信息指令: {event.raw_message} "
         f"来自用户: {event.user_id}在群: {event.group_id}"
     )
-    cpu_percent = await asyncio.to_thread(psutil.cpu_percent, 1)
-    mem = await asyncio.to_thread(psutil.virtual_memory)
-    disk = await asyncio.to_thread(psutil.disk_usage, "/")
-    boot_time = await asyncio.to_thread(psutil.boot_time)
+    cpu_percent, mem, disk, boot_time = await asyncio.gather(
+        asyncio.to_thread(psutil.cpu_percent, 1),
+        asyncio.to_thread(psutil.virtual_memory),
+        asyncio.to_thread(psutil.disk_usage, "/"),
+        asyncio.to_thread(psutil.boot_time),
+    )
     import datetime
 
     boot_time_str = datetime.datetime.fromtimestamp(
         boot_time, tz=datetime.UTC
     ).strftime("%Y-%m-%d %H:%M:%S")
-
     system_info = (
         f"====机器信息====\n\n"
         f"系统：{platform.system()} {platform.release()}\n"
