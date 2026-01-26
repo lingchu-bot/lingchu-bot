@@ -24,6 +24,7 @@ dependencies = [
     "nonebot-plugin-alconna>=0.60.4",
     "psutil>=7.2.1",
     "python-jose[cryptography]>=3.5.0",
+    "tomli-w>=1.0.0",
 ]
 
 [project.optional-dependencies]

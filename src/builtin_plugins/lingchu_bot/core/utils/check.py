@@ -14,7 +14,7 @@ async def check_feat_status(login_id: int) -> bool:
 
 
 # =============================================================================
-from nonebot.adapters.onebot.v11 import GroupMessageEvent
+from nonebot.adapters.onebot.v11 import GroupMessageEvent, PrivateMessageEvent
 
 
 def _is_super_user(user_id: str, super_users: set[str]) -> bool:
@@ -75,3 +75,13 @@ async def check_role_permission(
         else:
             result = False
     return result
+
+
+# =============================================================================
+async def check_super_permission(event: PrivateMessageEvent) -> bool:
+    """
+    检查是否为超级用户，仅适用于无角色区分的事件（如私聊事件）。
+    """
+    import nonebot
+
+    return _is_super_user(str(event.user_id), nonebot.get_driver().config.superusers)

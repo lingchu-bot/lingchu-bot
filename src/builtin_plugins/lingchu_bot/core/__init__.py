@@ -41,8 +41,9 @@ def index_init() -> None:
 
                 logger.debug("开始载入管理模块")
                 from .module import management as management
-            except Exception as e:  # noqa: BLE001
-                logger.error(f"载入管理模块失败: {e}")
+            except Exception as e:
+                logger.error(f"载入模块失败: {e}")
+                raise
         case False:
             logger.info("首次使用，正在引导配置\n")
             # from .module.initial import guide as guide

@@ -1,3 +1,3 @@
-from . import info, send, switch
+from . import event, info, switch
 
-__all__ = ["info", "send", "switch"]
+__all__ = ["event", "info", "switch"]
